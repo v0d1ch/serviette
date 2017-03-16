@@ -21,6 +21,7 @@ library
                      , servant-server
                      , wai
                      , warp
+                     , servant-js
   default-language:    Haskell2010
 
 executable serviette-exe
