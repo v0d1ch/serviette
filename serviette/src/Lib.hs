@@ -17,6 +17,7 @@ import Network.Wai.Handler.Warp
 import GHC.Generics
 import Servant
 import Servant.JS
+import System.FilePath
 
 data User = User
   { userId        :: Int
@@ -46,7 +47,7 @@ testApi = Proxy
 
 -- where our static files reside
 www :: FilePath
-www = "www"
+www = "/Users/v0d1ch/code/serviette/"
 startApp :: IO ()
 startApp = do
   writeJSForAPI testApi jquery (www </> "api.js")

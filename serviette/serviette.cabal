@@ -10,7 +10,6 @@ maintainer:          brutallesale@gmail.com
 copyright:           2017 Sasa Bogicevic
 category:            Web
 build-type:          Simple
-extra-source-files:  README.md
 cabal-version:       >=1.10
 
 library
@@ -21,6 +20,7 @@ library
                      , servant-server
                      , wai
                      , warp
+                     , filepath 
                      , servant-js
   default-language:    Haskell2010
 
