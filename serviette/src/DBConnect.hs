@@ -29,9 +29,9 @@ BlogPost
 |]
 
 connectionInfo = defaultConnectInfo { connectPort = 3306,
-                                      connectPassword = "secret",
-                                      connectUser = "homestead",
-                                      connectDatabase = "bsccrm"}
+                                      connectPassword = "root",
+                                      connectUser = "root",
+                                      connectDatabase = "jkl"}
 
 mysqlConnect :: IO ()
 mysqlConnect = runStderrLoggingT $ withMySQLPool connectionInfo 10 $ \pool -> liftIO $ do
