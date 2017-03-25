@@ -18,6 +18,7 @@ import GHC.Generics
 import Servant
 import Servant.JS
 import System.FilePath
+import DbConnect
 
 data User = User
   { userId        :: Int
@@ -48,9 +49,11 @@ testApi = Proxy
 -- where our static files reside
 www :: FilePath
 www = "/Users/v0d1ch/code/serviette/"
+
 startApp :: IO ()
 startApp = do
-  writeJSForAPI testApi jquery (www </> "api.js")
+  -- writeJSForAPI testApi jquery (www </> "api.js")
+  mysqlConnect
   run 8080 app
 
 app :: Application
