@@ -53,7 +53,7 @@ www = "/Users/v0d1ch/code/serviette/"
 startApp :: IO ()
 startApp = do
   -- writeJSForAPI testApi jquery (www </> "api.js")
-  mysqlConnect
+  dbConnect
   run 8080 app
 
 app :: Application

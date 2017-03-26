@@ -1,40 +1,56 @@
 {-# LANGUAGE EmptyDataDecls             #-}
 {-# LANGUAGE FlexibleContexts           #-}
 {-# LANGUAGE GADTs                      #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE MultiParamTypeClasses      #-}
 {-# LANGUAGE OverloadedStrings          #-}
 {-# LANGUAGE QuasiQuotes                #-}
 {-# LANGUAGE TemplateHaskell            #-}
 {-# LANGUAGE TypeFamilies               #-}
+{-# LANGUAGE MultiParamTypeClasses      #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE ScopedTypeVariables        #-}
 
-module DbConnect (mysqlConnect) where 
+module DbConnect (dbConnect) where
 
-import           Control.Monad.IO.Class  (liftIO)
-import           Control.Monad.Logger    (runStderrLoggingT)
-import           Database.Persist
-import           Database.Persist.MySQL
-import           Database.Persist.TH
+import Control.Monad.IO.Class  (liftIO)
+import Database.Persist
+import Database.Persist.Postgresql
+import Database.Persist.TH
+import Control.Monad.Logger
+
 
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
-Person
-    name String
-    age Int Maybe
-    address Int
-    deriving Show
-BlogPost
-    title String
-    authorId PersonId
-    deriving Show
-|]
+        Person
+            name String
+            age Int Maybe
+            deriving Show
+        BlogPost
+            title String
+            authorId PersonId
+            deriving Show
+        |]
 
-connectionInfo = defaultConnectInfo { connectPort = 3306,
-                                      connectPassword = "root",
-                                      connectUser = "root",
-                                      connectDatabase = "jkl"}
 
-mysqlConnect :: IO ()
-mysqlConnect = runStderrLoggingT $ withMySQLPool connectionInfo 10 $ \pool -> liftIO $ do
-         flip runSqlPersistMPool pool $ do
-           printMigration migrateAll
-           -- runMigration migrateAll
+connStr = "host=localhost dbname=v0d1ch user=postgres password=root port=5432" 
+
+dbConnect :: IO ()
+dbConnect = runStdoutLoggingT $ withPostgresqlPool connStr 10 $ \pool -> do
+       liftIO $ flip runSqlPersistMPool pool $ do
+         printMigration migrateAll
+         res  :: [Entity Person] <- selectList [] [LimitTo 1] 
+         liftIO $ print res
+            -- runMigration migrateAll
+
+            -- johnId <- insert $ Person "John Doe" $ Just 35
+            -- janeId <- insert $ Person "Jane Doe" Nothing
+
+            -- insert $ BlogPost "My fr1st p0st" johnId
+            -- insert $ BlogPost "One more for good measure" johnId
+
+            -- oneJohnPost <- selectList [BlogPostAuthorId ==. johnId] [LimitTo 1]
+            -- liftIO $ print (oneJohnPost :: [Entity BlogPost])
+
+            -- john <- get johnId
+            -- liftIO $ print (john :: Maybe Person)
+
+            -- delete janeId
+            -- deleteWhere [BlogPostAuthorId ==. johnId]
