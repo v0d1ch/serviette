@@ -53,7 +53,8 @@ www = "/Users/v0d1ch/code/serviette/"
 startApp :: IO ()
 startApp = do
   -- writeJSForAPI testApi jquery (www </> "api.js")
-  dbConnect
+  executeMigrations
+  getAllPersons
   run 8080 app
 
 app :: Application
