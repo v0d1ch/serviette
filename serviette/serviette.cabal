@@ -14,8 +14,11 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Lib
-                     , DbConnect
+  exposed-modules:     
+                        Config
+                      , Models
+                      , Api
+                      , Api.User
   build-depends:       base >= 4.7 && < 5
                      , aeson
                      , servant-server
@@ -28,7 +31,14 @@ library
                      , persistent-postgresql
                      , monad-logger >= 0.3.20.2 
                      , mtl
+                     , bytestring
                      , transformers
+                     , wai-extra
+                     , persistent
+                     , persistent-postgresql
+                     , persistent-template
+                     , warp
+                     , safe
 
   default-language:    Haskell2010
 
@@ -37,6 +47,11 @@ executable serviette-exe
   main-is:             Main.hs
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   build-depends:       base
+                     , persistent-postgresql
+                     , wai
+                     , warp
+                     , monad-logger
+                     , safe
                      , serviette
   default-language:    Haskell2010
 
