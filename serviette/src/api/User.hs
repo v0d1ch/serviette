@@ -20,6 +20,7 @@ type UserAPI =
          "users" :> Get '[JSON] [Entity User]
     :<|> "users" :> Capture "name" String :> Get '[JSON] (Entity User)
     :<|> "users" :> ReqBody '[JSON] User :> Post '[JSON] Int64
+    :<|> "users" :> Capture "userid" Integer :> ReqBody '[JSON]  User :> Put '[JSON] Int64
 
 -- | The server that runs the UserAPI
 userServer :: ServerT UserAPI App
