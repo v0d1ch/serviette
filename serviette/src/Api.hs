@@ -16,7 +16,9 @@ import           Servant
 import           Config                      (App (..), Config (..))
 import           Models
 
+import           Api.Sql
 import           Api.User
+
 
 -- | This is the function we export to run our 'UserAPI'. Given
 -- a 'Config', we return a WAI 'Application' which any WAI compliant server
@@ -24,10 +26,20 @@ import           Api.User
 userApp :: Config -> Application
 userApp cfg = serve (Proxy :: Proxy UserAPI) (appToServer cfg)
 
+sqlApp :: Config -> Application
+sqlApp cfg = serve (Proxy :: Proxy SqlAPI) (sqlToServer cfg)
+
+
 -- | This functions tells Servant how to run the 'App' monad with our
 -- 'server' function.
 appToServer :: Config -> Server UserAPI
 appToServer cfg = enter (convertApp cfg) userServer
+
+-- | This functions tells Servant how to run the 'App' monad with our
+-- 'server' function.
+sqlToServer :: Config -> Server SqlAPI
+sqlToServer cfg = enter (convertApp cfg) sqlServer
+
 
 -- | This function converts our 'App' monad into the @ExceptT ServantErr
 -- IO@ monad that Servant's 'enter' function needs in order to run the
@@ -48,7 +60,7 @@ files = serveDirectory "assets"
 -- two different APIs and applications. This is a powerful tool for code
 -- reuse and abstraction! We need to put the 'Raw' endpoint last, since it
 -- always succeeds.
-type AppAPI = UserAPI :<|> Raw
+type AppAPI = SqlAPI :<|> Raw
 
 appApi :: Proxy AppAPI
 appApi = Proxy
@@ -57,4 +69,4 @@ appApi = Proxy
 -- alongside the 'Raw' endpoint that serves all of our files.
 app :: Config -> Application
 app cfg =
-    serve appApi (appToServer cfg :<|> files)
+    serve appApi (sqlToServer cfg :<|> files)

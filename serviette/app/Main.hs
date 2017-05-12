@@ -21,7 +21,7 @@ main = do
     pool <- makePool env
     let cfg = Config { getPool = pool, getEnv = env }
         logger = setLogger env
-    runSqlPool doMigrations pool
+    -- runSqlPool doMigrations pool
     run port $ logger $ app cfg
 
 -- | Looks up a setting in the environment, with a provided default, and
