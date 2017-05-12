@@ -1,2 +1,2 @@
-## SERVIETTE - Servant API backend
-This is API REST backend that Yesod client connects to to get the data
+## SERVIETTE - Servant API for generating SQL from JSON 
+API that you can use to generate SQL queries from JSON. 

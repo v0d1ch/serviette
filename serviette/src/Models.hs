@@ -26,6 +26,7 @@ share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 User json
     name String
     email String
+    UniqueEmail email
     deriving Show
 |]
 
