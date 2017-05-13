@@ -19,6 +19,8 @@ library
                       , Models
                       , Api
                       , Api.User
+                      , Api.Sqldata
+
   build-depends:       base >= 4.7 && < 5
                      , aeson
                      , servant-server

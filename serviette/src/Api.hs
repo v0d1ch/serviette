@@ -16,7 +16,7 @@ import           Servant
 import           Config                      (App (..), Config (..))
 import           Models
 
-import           Api.Sql
+import           Api.Sqldata
 import           Api.User
 
 

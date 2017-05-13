@@ -28,6 +28,7 @@ User json
     email String
     UniqueEmail email
     deriving Show
+
 |]
 
 doMigrations :: SqlPersistT IO ()

@@ -19,12 +19,10 @@ import           Models
 type UserAPI =
          "users" :> Get '[JSON] [Entity User]
     :<|> "users" :> Capture "name" String :> Get '[JSON] (Entity User)
-    :<|> "users" :> ReqBody '[JSON] User :> Post '[JSON] Int64
-    :<|> "users" :> Capture "userid" Integer :> ReqBody '[JSON]  User :> Put '[JSON] Int64
 
 -- | The server that runs the UserAPI
 userServer :: ServerT UserAPI App
-userServer = allUsers :<|> singleUser :<|> createUser
+userServer = allUsers :<|> singleUser
 
 -- | Returns all users in the database.
 allUsers :: App [Entity User]
@@ -32,7 +30,7 @@ allUsers =
     runDb (selectList [] [])
 
 -- | Returns a user by name or throws a 404 error.
-singleUser :: String -> App (Entity User)
+singleUser :: [Char] -> App (Entity User)
 singleUser str = do
     maybeUser <- runDb (selectFirst [UserName ==. str] [])
     case maybeUser of
@@ -41,8 +39,3 @@ singleUser str = do
          Just person ->
             return person
 
--- | Creates a user in the database.
-createUser :: User -> App Int64
-createUser p = do
-    newUser <- runDb (insert (User (userName p) (userEmail p)))
-    return $ fromSqlKey newUser
