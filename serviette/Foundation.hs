@@ -27,6 +27,7 @@ instance Yesod App where
 
     yesodMiddleware = defaultYesodMiddleware
 
+    isAuthorized HomeR _ = return Authorized
     isAuthorized ApiR _ = return Authorized
 
 

@@ -5,8 +5,8 @@ import           Data.Text       (pack)
 import           Import
 import           Yesod.Core.Json (returnJson)
 
-getApiR :: Handler Value
-getApiR = do
-  return $ object ["data" .= "serviette"]
+getHomeR :: Handler Value
+getHomeR = do
+  return $ String "serviette"
 
 
