@@ -1,29 +1,34 @@
 module Handler.Api where
 
-import qualified Data.Aeson as J
+import qualified Data.Aeson              as A
+import           Data.Aeson.Types
+import qualified Data.HashMap.Strict     as HM
+import qualified Data.Text.Lazy.Encoding as T
+import qualified Data.Text.Lazy.IO       as T
+import qualified Data.Vector             as V
 import           Import
-
 {-
    received JSON example
 
    {
-     command : "SELECT | INSERT | UPDATE | DELETE",
-     tableName: "users",
-     join:[
-        {tableName:"contracts",field:"contractField",operator:"",withTable:"users", withField:"usersField"},
-        {tableName:"commissions",field:"contractField",operator:"",withTable:"contracts", withField:"usersField"}
+     sql:{
+      command : "SELECT | INSERT | UPDATE | DELETE",
+      tableName: "users",
+      join:[
+          {tableName:"contracts",field:"contractField",operator:"",withTable:"users", withField:"usersField"},
+          {tableName:"commissions",field:"contractField",operator:"",withTable:"contracts", withField:"usersField"}
 
-     ],
-     where:[
-        {tableName:"commissions",field:"contractField",operator:"", fieldValue:1}
-     ],
-     groupBy:[
+      ],
+      where:[
+          {tableName:"commissions",field:"contractField",operator:"", fieldValue:1}
+      ],
+      groupBy:[
 
-     ],
-     orderBy:[
+      ],
+      orderBy:[
 
-     ]
-
+      ]
+     }
 
    }
 
@@ -44,9 +49,17 @@ data SqlSelectQuery = SqlSelectQuery Command (Maybe [JoinTable]) (Maybe Groupby)
 
 getApiR :: Handler Value
 getApiR = do
-  return $ J.String "get api"
+  return $ A.String "Serviette - SQL JSON API"
 
 postApiR :: Handler Value
 postApiR = do
-  return $ J.String "post api"
+  sql <- lookupPostParam "sql"
+  case sql of
+    Nothing ->   return $ A.String "missing root key 'sql' !"
+    Just s  ->   return $ A.String "got key 'sql' !"
+
+parseRootObject :: FromJSON a => Value -> Parser a
+parseRootObject = withObject "sql" $ \o -> do
+  c <- o .: "command"
+  return c
 
