@@ -1,2 +1,2 @@
-## SERVIETTE - Servant API for generating SQL from JSON 
-API that you can use to generate SQL queries from JSON. 
+## SERVIETTE - Yesod API for generating SQL from JSON 
+API for generating SQL queries from JSON. 

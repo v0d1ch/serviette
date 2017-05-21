@@ -39,6 +39,7 @@ import Network.Wai.Middleware.RequestLogger (Destination (Logger),
 import System.Log.FastLogger                (defaultBufSize, newStdoutLoggerSet,
                                              toLogStr)
 
+import Handler.Home
 import Handler.Api
 
 mkYesodDispatch "App" resourcesApp
