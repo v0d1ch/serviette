@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveGeneric #-}
 module Handler.Api where
 
 import qualified Data.Aeson              as A
@@ -45,6 +46,12 @@ data Where      = Where TableName ColumnName Operator FieldValue
 data Groupby    = Groupby ColumnName
 data Orderby    = Orderby ColumnName
 
+data SqlQuery = SqlQuery
+  { command :: !Text
+  } deriving (Show, Generic)
+
+
+
 data SqlSelectQuery = SqlSelectQuery Command (Maybe [JoinTable]) (Maybe Groupby) (Maybe Orderby)
 
 getApiR :: Handler Value
@@ -53,10 +60,10 @@ getApiR = do
 
 postApiR :: Handler Value
 postApiR = do
-  sql <- lookupPostParam "sql"
-  case sql of
-    Nothing ->   return $ A.String "missing root key 'sql' !"
-    Just s  ->   return $ A.String "got key 'sql' !"
+  -- _ <- parseJsonBody
+  -- let o = parseRootObject sql
+  return $ A.String "Serviette: parsed!"
+
 
 parseRootObject :: FromJSON a => Value -> Parser a
 parseRootObject = withObject "sql" $ \o -> do
