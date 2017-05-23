@@ -47,12 +47,13 @@ data Groupby    = Groupby ColumnName
 data Orderby    = Orderby ColumnName
 
 data SqlQuery = SqlQuery
-  { command :: !Text
+  { sql :: !Object
   } deriving (Show, Generic)
 
+instance FromJSON SqlQuery
+instance ToJSON SqlQuery
 
-
-data SqlSelectQuery = SqlSelectQuery Command (Maybe [JoinTable]) (Maybe Groupby) (Maybe Orderby)
+-- data SqlSelectQuery = SqlSelectQuery Command (Maybe [JoinTable]) (Maybe Groupby) (Maybe Orderby)
 
 getApiR :: Handler Value
 getApiR = do
@@ -60,10 +61,9 @@ getApiR = do
 
 postApiR :: Handler Value
 postApiR = do
-  -- _ <- parseJsonBody
-  -- let o = parseRootObject sql
-  return $ A.String "Serviette: parsed!"
-
+  sql <- requireJsonBody :: Handler SqlQuery
+  print sql
+  returnJson sql
 
 parseRootObject :: FromJSON a => Value -> Parser a
 parseRootObject = withObject "sql" $ \o -> do
