@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE OverloadedStrings #-}
 module Handler.Api where
 
 import qualified Data.Aeson          as A
@@ -44,22 +45,29 @@ data Where      = Where TableName ColumnName Operator FieldValue
 data Groupby    = Groupby ColumnName
 data Orderby    = Orderby ColumnName
 
+
 data SqlQuery = SqlQuery
-  { command  :: Command
+  { command :: Text
+  , author :: Text
+  , authorBorn :: Int
   } deriving (Show)
 
 instance FromJSON Command
-instance ToJSON Command 
+instance ToJSON Command
 
 instance FromJSON SqlQuery where
-  parseJSON = withObject "sql" $ \o -> do
+    parseJSON = withObject "sql" $ \o -> do
     command <- o .: "command"
+    authorO <- o .: "author"
+    author     <- authorO .: "name"
+    authorBorn <- authorO .: "born"
+
     return SqlQuery{..}
 
-instance ToJSON SqlQuery where
-  toJSON SqlQuery{..} = object [
-    "command" .= command
-    ]
+
+-- instance ToJSON SqlQuery where
+--   toJSON SqlQuery {..} =
+--     object [name .= "name", author .= "author", authorBorn .= 5]
 
 -- data SqlSelectQuery = SqlSelectQuery Command (Maybe [JoinTable]) (Maybe Groupby) (Maybe Orderby)
 
@@ -71,7 +79,8 @@ postApiR :: Handler Value
 postApiR = do
   sql <- requireJsonBody :: Handler SqlQuery
   print sql
-  returnJson sql
+  return $ A.String "Serviette - SQL JSON API"
+
 
 parseObject :: Monad m =>  Value -> m (Text, Text, Text, Text, Text)
 parseObject (Object obj) = do
