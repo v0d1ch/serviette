@@ -1,12 +1,10 @@
 {-# LANGUAGE DeriveGeneric #-}
 module Handler.Api where
 
-import qualified Data.Aeson              as A
+import qualified Data.Aeson          as A
 import           Data.Aeson.Types
-import qualified Data.HashMap.Strict     as HM
-import qualified Data.Text.Lazy.Encoding as T
-import qualified Data.Text.Lazy.IO       as T
-import qualified Data.Vector             as V
+import qualified Data.HashMap.Strict as HM
+import qualified Data.Vector         as V
 import           Import
 {-
    received JSON example
@@ -36,22 +34,32 @@ import           Import
 -}
 
 -- | Types declaration
-type TableName  = String
-type ColumnName = String
+type TableName  = Text
+type ColumnName = Text
 data FieldValue = Int | String
 data Operator   = Equals | NotEquals | LargerThan | LessThan | NotNull | Null
-data Command    = SELECT TableName | INSERT TableName | UPDATE TableName | DELETE TableName
+data Command    = SELECT TableName | INSERT TableName | UPDATE TableName | DELETE TableName deriving (Show, Generic)
 data JoinTable  = JoinTable TableName
 data Where      = Where TableName ColumnName Operator FieldValue
 data Groupby    = Groupby ColumnName
 data Orderby    = Orderby ColumnName
 
 data SqlQuery = SqlQuery
-  { sql :: !Object
-  } deriving (Show, Generic)
+  { command  :: Command
+  } deriving (Show)
 
-instance FromJSON SqlQuery
-instance ToJSON SqlQuery
+instance FromJSON Command
+instance ToJSON Command 
+
+instance FromJSON SqlQuery where
+  parseJSON = withObject "sql" $ \o -> do
+    command <- o .: "command"
+    return SqlQuery{..}
+
+instance ToJSON SqlQuery where
+  toJSON SqlQuery{..} = object [
+    "command" .= command
+    ]
 
 -- data SqlSelectQuery = SqlSelectQuery Command (Maybe [JoinTable]) (Maybe Groupby) (Maybe Orderby)
 
@@ -65,8 +73,42 @@ postApiR = do
   print sql
   returnJson sql
 
-parseRootObject :: FromJSON a => Value -> Parser a
-parseRootObject = withObject "sql" $ \o -> do
-  c <- o .: "command"
-  return c
+parseObject :: Monad m =>  Value -> m (Text, Text, Text, Text, Text)
+parseObject (Object obj) = do
+
+  tableName <- case HM.lookup "tableName" obj of
+    Just (A.String x) -> return x
+    Just _            -> fail "expected a string"
+    Nothing           -> fail "no field 'tableName'"
+
+  field <- case HM.lookup "field" obj of
+    Just (A.String x) -> return x
+    Just _            -> fail "expected a string"
+    Nothing           -> fail "no field 'field'"
+
+  operator <- case HM.lookup "operator" obj of
+    Just (A.String x) -> return x
+    Just _            -> fail "expected a string"
+    Nothing           -> fail "no field 'operator'"
+
+  withTable <- case HM.lookup "withTable" obj of
+    Just (A.String x) -> return x
+    Just _            -> fail "expected a string"
+    Nothing           -> fail "no field 'withTable'"
+
+  withField <- case HM.lookup "withField" obj of
+    Just (A.String x) -> return x
+    Just _            -> fail "expected a string"
+    Nothing           -> fail "no field 'withField'"
+
+
+  return (tableName, field, operator,withTable, withField)
+
+parseObject _    = fail "expected Object "
+
+
+
+parseArray :: Monad m => Value -> m [(Text, Text, Text, Text, Text)]
+parseArray (Array arr) = mapM parseObject (V.toList arr)
+parseArray _           = fail "expected an array"
 
