@@ -48,19 +48,18 @@ data Orderby    = Orderby ColumnName
 
 data SqlQuery = SqlQuery
   { command :: Text
-  , author :: Text
-  , authorBorn :: Int
+  , tableName :: Text
+  , join :: [Text]
   } deriving (Show)
 
 instance FromJSON Command
 instance ToJSON Command
 
 instance FromJSON SqlQuery where
-    parseJSON = withObject "sql" $ \o -> do
-    command <- o .: "command"
-    authorO <- o .: "author"
-    author     <- authorO .: "name"
-    authorBorn <- authorO .: "born"
+    parseJSON = withObject "story" $ \o -> do
+    command <- o .: "command" 
+    tableName <- o .: "tableName" 
+    join <- o .: "join"
 
     return SqlQuery{..}
 
