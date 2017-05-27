@@ -13,7 +13,7 @@ import           Import
    {
      sql:{
       command : "SELECT | INSERT | UPDATE | DELETE",
-      tableName: "users",
+      selectName: "users",
       join:[
           {tableName:"contracts",field:"contractField",operator:"",withTable:"users", withField:"usersField"},
           {tableName:"commissions",field:"contractField",operator:"",withTable:"contracts", withField:"usersField"}
@@ -40,7 +40,7 @@ type ColumnName = Text
 data FieldValue = Int | String
 data Operator   = Equals | NotEquals | LargerThan | LessThan | NotNull | Null
 data Command    = SELECT TableName | INSERT TableName | UPDATE TableName | DELETE TableName deriving (Show, Generic)
-data JoinTable  = JoinTable TableName
+data JoinTable  = JoinTable Text Text Text Text Text
 data Where      = Where TableName ColumnName Operator FieldValue
 data Groupby    = Groupby ColumnName
 data Orderby    = Orderby ColumnName
@@ -48,19 +48,33 @@ data Orderby    = Orderby ColumnName
 
 data SqlQuery = SqlQuery
   { command :: Text
-  , tableName :: Text
+  , selectName :: Text
   , joinTables :: [Text]
   } deriving (Show)
 
 instance FromJSON Command
 instance ToJSON Command
 
+parseJoinTable :: Value -> Parser JoinTable
+parseJoinTable = withObject "object" $ \o -> do
+    a <- o .: "tableName"
+    b <- o .: "field"
+    c <- o .: "operator"
+    d <- o .: "withTable"
+    e <- o .: "withField"
+
+
+    return $ JoinTable a b c d e
+
+parseJoinList :: Value -> Parser [JoinTable]
+parseJoinList = withArray "array" $ \arr ->
+    mapM parseJoinTable (V.toList arr)
+  
 instance FromJSON SqlQuery where
     parseJSON = withObject "story" $ \o -> do
-    command <- o .: "command" 
-    tableName <- o .: "tableName" 
-    joinTables <- o .: "join"
-
+    command <- o .: "command"
+    selectName <- o .: "selectName"
+    parseJoinList <- o .: "join"
     return SqlQuery{..}
 
 
