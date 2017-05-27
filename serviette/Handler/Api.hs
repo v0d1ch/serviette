@@ -49,7 +49,7 @@ data Orderby    = Orderby ColumnName
 data SqlQuery = SqlQuery
   { command :: Text
   , tableName :: Text
-  , join :: [Text]
+  , joinTables :: [Text]
   } deriving (Show)
 
 instance FromJSON Command
@@ -59,7 +59,7 @@ instance FromJSON SqlQuery where
     parseJSON = withObject "story" $ \o -> do
     command <- o .: "command" 
     tableName <- o .: "tableName" 
-    join <- o .: "join"
+    joinTables <- o .: "join"
 
     return SqlQuery{..}
 
