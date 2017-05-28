@@ -4,8 +4,6 @@ module Handler.Api where
 
 import qualified Data.Aeson          as A
 import           Data.Aeson.Types
-import qualified Data.HashMap.Strict as HM
-import qualified Data.Vector         as V
 import           Import
 {-
    received JSON example
@@ -19,13 +17,13 @@ import           Import
           {tableName:"commissions",field:"contractField",operator:"",withTable:"contracts", withField:"usersField"}
 
       ],
-      where:[
+      whereCondition:[
           {tableName:"commissions",field:"contractField",operator:"", fieldValue:1}
       ],
-      groupBy:[
+      groupByFields:[
 
       ],
-      orderBy:[
+      orderByFields:[
 
       ]
      }
@@ -39,7 +37,7 @@ type TableName  = Text
 type ColumnName = Text
 data FieldValue = Int | String
 data Operator   = Equals | NotEquals | LargerThan | LessThan | NotNull | Null
-data Command    = SELECT TableName | INSERT TableName | UPDATE TableName | DELETE TableName deriving (Show, Generic)
+data Command    = Command Text deriving (Show, Generic) -- SELECT TableName | INSERT TableName | UPDATE TableName | DELETE TableName deriving (Show, Generic)
 data JoinTable  = JoinTable Text Text Text Text Text
 data Where      = Where TableName ColumnName Operator FieldValue
 data Groupby    = Groupby ColumnName
@@ -47,9 +45,13 @@ data Orderby    = Orderby ColumnName
 
 
 data SqlQuery = SqlQuery
-  { command :: Text
-  , selectName :: Text
-  , joinTables :: [Text]
+  { command        :: Command
+  , selectName     :: Text
+  , joinTables     :: !Array
+  , whereCondition :: !Array
+  , groupByFields  :: !Array
+  , orderByFields  :: !Array
+
   } deriving (Show)
 
 instance FromJSON Command
@@ -62,19 +64,17 @@ parseJoinTable = withObject "object" $ \o -> do
     c <- o .: "operator"
     d <- o .: "withTable"
     e <- o .: "withField"
-
-
     return $ JoinTable a b c d e
 
-parseJoinList :: Value -> Parser [JoinTable]
-parseJoinList = withArray "array" $ \arr ->
-    mapM parseJoinTable (V.toList arr)
-  
+
 instance FromJSON SqlQuery where
     parseJSON = withObject "story" $ \o -> do
-    command <- o .: "command"
-    selectName <- o .: "selectName"
-    parseJoinList <- o .: "join"
+    command        <- o .: "command"
+    selectName     <- o .: "selectName"
+    joinTables     <- o .: "join"
+    whereCondition <- o .: "whereCondition"
+    groupByFields  <- o .: "groupByFields"
+    orderByFields  <- o .: "orderByFields"
     return SqlQuery{..}
 
 
@@ -95,42 +95,6 @@ postApiR = do
   return $ A.String "Serviette - SQL JSON API"
 
 
-parseObject :: Monad m =>  Value -> m (Text, Text, Text, Text, Text)
-parseObject (Object obj) = do
-
-  tableName <- case HM.lookup "tableName" obj of
-    Just (A.String x) -> return x
-    Just _            -> fail "expected a string"
-    Nothing           -> fail "no field 'tableName'"
-
-  field <- case HM.lookup "field" obj of
-    Just (A.String x) -> return x
-    Just _            -> fail "expected a string"
-    Nothing           -> fail "no field 'field'"
-
-  operator <- case HM.lookup "operator" obj of
-    Just (A.String x) -> return x
-    Just _            -> fail "expected a string"
-    Nothing           -> fail "no field 'operator'"
-
-  withTable <- case HM.lookup "withTable" obj of
-    Just (A.String x) -> return x
-    Just _            -> fail "expected a string"
-    Nothing           -> fail "no field 'withTable'"
-
-  withField <- case HM.lookup "withField" obj of
-    Just (A.String x) -> return x
-    Just _            -> fail "expected a string"
-    Nothing           -> fail "no field 'withField'"
 
 
-  return (tableName, field, operator,withTable, withField)
-
-parseObject _    = fail "expected Object "
-
-
-
-parseArray :: Monad m => Value -> m [(Text, Text, Text, Text, Text)]
-parseArray (Array arr) = mapM parseObject (V.toList arr)
-parseArray _           = fail "expected an array"
 
