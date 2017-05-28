@@ -110,4 +110,3 @@ postApiR :: Handler Value
 postApiR = do
   sql <- requireJsonBody :: Handler SqlQuery
   return $ A.toJSON $  SqlResultQuery $ getCommandArg sql
-  -- return $ A.String "Serviette - SQL JSON API"  
