@@ -3,7 +3,7 @@
 module Handler.Api where
 
 import qualified Data.Aeson          as A
-import           Data.Aeson.Types
+import           Data.Aeson.Types    as AT
 import           Import
 {-
    received JSON example
@@ -30,7 +30,7 @@ import           Import
 
 -}
 
--- | Types declaration
+-- | Type declaration
 data TableName  = TableName Text deriving (Show, Generic)
 data ColumnName = ColumnName Text deriving (Show, Generic)
 data FieldValue = Int | String deriving (Show, Generic)
@@ -52,7 +52,7 @@ data SqlQuery = SqlQuery
 
   } deriving (Show)
 
-data SqlResultQuery =  Command (Maybe [JoinTable]) [Where] (Maybe Groupby) (Maybe Orderby)
+data SqlResultQuery =  SqlResultQuery Command deriving (Show, Generic)-- (Maybe [JoinTable]) [Where] (Maybe Groupby) (Maybe Orderby)
 
 instance FromJSON Command
 instance ToJSON Command
@@ -62,6 +62,13 @@ instance ToJSON TableName
 
 instance FromJSON JoinTable
 instance ToJSON JoinTable
+
+instance ToJSON SqlResultQuery where
+    toJSON (SqlResultQuery (SELECTT (TableName a ))) = object [ "command" .= A.String (a) ]
+    toJSON (SqlResultQuery (INSERTT (TableName a ))) = object [ "command" .= A.String (a) ]
+    toJSON (SqlResultQuery (UPDATET (TableName a ))) = object [ "command" .= A.String (a) ]
+    toJSON (SqlResultQuery (DELETET (TableName a ))) = object [ "command" .= A.String (a) ]
+
 
 
 parseJoinTable :: Value -> Parser JoinTable
@@ -102,6 +109,5 @@ getApiR = do
 postApiR :: Handler Value
 postApiR = do
   sql <- requireJsonBody :: Handler SqlQuery
-  print sql
-  print $ getCommandArg sql
-  return $ A.String "Serviette - SQL JSON API"
+  return $ A.toJSON $  SqlResultQuery $ getCommandArg sql
+  -- return $ A.String "Serviette - SQL JSON API"  
