@@ -7,7 +7,6 @@ import           Data.Aeson.Types
 import           Import
 {-
    received JSON example
-
    {
      sql:{
       command : "SELECT | INSERT | UPDATE | DELETE",
@@ -27,25 +26,24 @@ import           Import
 
       ]
      }
-
    }
 
 -}
 
 -- | Types declaration
-type TableName  = Text
-type ColumnName = Text
-data FieldValue = Int | String
-data Operator   = Equals | NotEquals | LargerThan | LessThan | NotNull | Null
-data Command    = Command Text deriving (Show, Generic) -- SELECT TableName | INSERT TableName | UPDATE TableName | DELETE TableName deriving (Show, Generic)
-data JoinTable  = JoinTable Text Text Text Text Text
-data Where      = Where TableName ColumnName Operator FieldValue
-data Groupby    = Groupby ColumnName
-data Orderby    = Orderby ColumnName
+data TableName  = TableName Text deriving (Show, Generic)
+data ColumnName = ColumnName Text deriving (Show, Generic)
+data FieldValue = Int | String deriving (Show, Generic)
+data Operator   = Equals | NotEquals | LargerThan | LessThan | NotNull | Null deriving (Show, Generic)
+data Command    = SELECTT TableName | INSERTT TableName | UPDATET TableName | DELETET TableName deriving (Show, Generic)
+data JoinTable  = JoinTable Text Text Text Text Text deriving (Show, Generic)
+data Where      = Where TableName ColumnName Operator FieldValue deriving (Show, Generic)
+data Groupby    = Groupby ColumnName deriving (Show, Generic)
+data Orderby    = Orderby ColumnName deriving (Show, Generic)
 
 
 data SqlQuery = SqlQuery
-  { command        :: Command
+  { command        :: Text
   , selectName     :: Text
   , joinTables     :: !Array
   , whereCondition :: !Array
@@ -54,8 +52,17 @@ data SqlQuery = SqlQuery
 
   } deriving (Show)
 
+data SqlResultQuery =  Command (Maybe [JoinTable]) [Where] (Maybe Groupby) (Maybe Orderby)
+
 instance FromJSON Command
 instance ToJSON Command
+
+instance FromJSON TableName
+instance ToJSON TableName
+
+instance FromJSON JoinTable
+instance ToJSON JoinTable
+
 
 parseJoinTable :: Value -> Parser JoinTable
 parseJoinTable = withObject "object" $ \o -> do
@@ -77,12 +84,16 @@ instance FromJSON SqlQuery where
     orderByFields  <- o .: "orderByFields"
     return SqlQuery{..}
 
+getCommandArg :: SqlQuery -> Command
+getCommandArg q =
+    case c of
+      TableName "SELECT" -> SELECTT c
+      TableName "INSERT" -> INSERTT c
+      TableName "UPDATE" -> UPDATET c
+      TableName "DELETE" -> DELETET c
+      _                  -> SELECTT c
 
--- instance ToJSON SqlQuery where
---   toJSON SqlQuery {..} =
---     object [name .= "name", author .= "author", authorBorn .= 5]
-
--- data SqlSelectQuery = SqlSelectQuery Command (Maybe [JoinTable]) (Maybe Groupby) (Maybe Orderby)
+    where c = TableName $ command q
 
 getApiR :: Handler Value
 getApiR = do
@@ -92,9 +103,5 @@ postApiR :: Handler Value
 postApiR = do
   sql <- requireJsonBody :: Handler SqlQuery
   print sql
+  print $ getCommandArg sql
   return $ A.String "Serviette - SQL JSON API"
-
-
-
-
-
