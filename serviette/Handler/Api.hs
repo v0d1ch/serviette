@@ -41,7 +41,6 @@ data Where      = Where TableName ColumnName Operator FieldValue deriving (Show,
 data Groupby    = Groupby ColumnName deriving (Show, Generic)
 data Orderby    = Orderby ColumnName deriving (Show, Generic)
 
-
 data SqlQuery = SqlQuery
   { command        :: Text
   , selectName     :: Text
@@ -52,7 +51,7 @@ data SqlQuery = SqlQuery
 
   } deriving (Show)
 
-data SqlResultQuery =  SqlResultQuery Command deriving (Show, Generic)-- (Maybe [JoinTable]) [Where] (Maybe Groupby) (Maybe Orderby)
+data SqlResultQuery =  SqlResultQuery Command  TableName deriving (Show, Generic)-- (Maybe [JoinTable]) [Where] (Maybe Groupby) (Maybe Orderby)
 
 instance FromJSON Command
 instance ToJSON Command
@@ -64,10 +63,20 @@ instance FromJSON JoinTable
 instance ToJSON JoinTable
 
 instance ToJSON SqlResultQuery where
-    toJSON (SqlResultQuery (SELECTT (TableName a ))) = object [ "command" .= A.String (a) ]
-    toJSON (SqlResultQuery (INSERTT (TableName a ))) = object [ "command" .= A.String (a) ]
-    toJSON (SqlResultQuery (UPDATET (TableName a ))) = object [ "command" .= A.String (a) ]
-    toJSON (SqlResultQuery (DELETET (TableName a ))) = object [ "command" .= A.String (a) ]
+    toJSON (SqlResultQuery (SELECTT (TableName a )) (TableName b)) = object [ "command"    .= A.String a ,
+                                                                  "selectName" .= A.String b
+                                                                ]
+    toJSON (SqlResultQuery (INSERTT (TableName a )) (TableName b)) = object [ "command"    .= A.String a,
+                                                                  "selectName" .= A.String b
+
+                                                              ]
+    toJSON (SqlResultQuery (UPDATET (TableName a )) (TableName b)) = object [ "command"    .= A.String a,
+                                                                  "selectName" .= A.String b
+                                                                ]
+    toJSON (SqlResultQuery (DELETET (TableName a )) (TableName b)) = object [ "command"     .= A.String a,
+                                                                  "selectName"  .= A.String b
+                                                                ]
+
 
 
 
@@ -102,6 +111,10 @@ getCommandArg q =
 
     where c = TableName $ command q
 
+getSelectTableArg :: SqlQuery -> TableName
+getSelectTableArg q = undefined
+
+
 getApiR :: Handler Value
 getApiR = do
   return $ A.String "Serviette - SQL JSON API"
@@ -109,4 +122,4 @@ getApiR = do
 postApiR :: Handler Value
 postApiR = do
   sql <- requireJsonBody :: Handler SqlQuery
-  return $ A.toJSON $  SqlResultQuery $ getCommandArg sql
+  return $ A.toJSON $  SqlResultQuery $ getCommandArg getSelectTableArg sql
