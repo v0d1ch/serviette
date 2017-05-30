@@ -1,10 +1,13 @@
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE OverloadedStrings #-}
 module Handler.Api where
 
 import qualified Data.Aeson          as A
 import           Data.Aeson.Types    as AT
+import qualified Data.Vector as V
 import           Import
+import qualified Data.HashMap.Strict as HM
 {-
    received JSON example
    {
@@ -31,57 +34,67 @@ import           Import
 -}
 
 -- | Type declaration
-data TableName  = TableName Text deriving (Show, Generic)
-data ColumnName = ColumnName Text deriving (Show, Generic)
-data FieldValue = Int | String deriving (Show, Generic)
-data Operator   = Equals | NotEquals | LargerThan | LessThan | NotNull | Null deriving (Show, Generic)
-data Command    = SELECTT TableName | INSERTT TableName | UPDATET TableName | DELETET TableName deriving (Show, Generic)
-data JoinTable  = JoinTable Text Text Text Text Text deriving (Show, Generic)
-data Where      = Where TableName ColumnName Operator FieldValue deriving (Show, Generic)
-data Groupby    = Groupby ColumnName deriving (Show, Generic)
-data Orderby    = Orderby ColumnName deriving (Show, Generic)
+data TableName  = TableName Text deriving (Show, Generic, ToJSON, FromJSON)
+data ColumnName = ColumnName Text deriving (Show, Generic, ToJSON, FromJSON)
+data FieldValue = Int | String deriving (Show, Generic, ToJSON, FromJSON)
+data Operator   = Equals | NotEquals | LargerThan | LessThan | NotNull | Null deriving (Show, Generic, ToJSON, FromJSON)
+data Command    = SELECTT TableName | INSERTT TableName | UPDATET TableName | DELETET TableName deriving (Show, Generic, ToJSON, FromJSON)
+newtype JoinTableList = JoinTableList {jtList :: [JoinTable]} deriving (Show, Generic, ToJSON)
+data JoinTable  = JoinTable Text Text Text Text Text deriving (Show, Generic, ToJSON)
+data Where      = Where TableName ColumnName Operator FieldValue deriving (Show, Generic, ToJSON, FromJSON)
+data Groupby    = Groupby ColumnName deriving (Show, Generic, ToJSON, FromJSON)
+data Orderby    = Orderby ColumnName deriving (Show, Generic, ToJSON, FromJSON)
 
 data SqlQuery = SqlQuery
   { command        :: Text
   , selectName     :: Text
-  , joinTables     :: !Array
+  , joinTables     :: JoinTableList
   , whereCondition :: !Array
   , groupByFields  :: !Array
   , orderByFields  :: !Array
 
   } deriving (Show)
 
-data SqlResultQuery =  SqlResultQuery Command  TableName deriving (Show, Generic)-- (Maybe [JoinTable]) [Where] (Maybe Groupby) (Maybe Orderby)
+data SqlResultQuery =  SqlResultQuery Command  TableName JoinTableList  deriving (Show, Generic, FromJSON)
 
-instance FromJSON Command
-instance ToJSON Command
-
-instance FromJSON TableName
-instance ToJSON TableName
-
-instance FromJSON JoinTable
-instance ToJSON JoinTable
+-- (Maybe [JoinTable]) [Where] (Maybe Groupby) (Maybe Orderby)
 
 instance ToJSON SqlResultQuery where
-    toJSON (SqlResultQuery (SELECTT (TableName a )) (TableName b)) = object [ "command"    .= A.String a ,
-                                                                  "selectName" .= A.String b
-                                                                ]
-    toJSON (SqlResultQuery (INSERTT (TableName a )) (TableName b)) = object [ "command"    .= A.String a,
-                                                                  "selectName" .= A.String b
-
-                                                              ]
-    toJSON (SqlResultQuery (UPDATET (TableName a )) (TableName b)) = object [ "command"    .= A.String a,
-                                                                  "selectName" .= A.String b
-                                                                ]
-    toJSON (SqlResultQuery (DELETET (TableName a )) (TableName b)) = object [ "command"     .= A.String a,
-                                                                  "selectName"  .= A.String b
-                                                                ]
-
-
-
+  toJSON (SqlResultQuery (SELECTT (TableName a)) (TableName b) (JoinTableList c)) =
+    object ["command" .= A.String a, "selectName" .= A.String b, "joins" .= c]
+  toJSON (SqlResultQuery (INSERTT (TableName a)) (TableName b) (JoinTableList c)) =
+    object ["command" .= A.String a, "selectName" .= A.String b, "joins" .= c ]
+  toJSON (SqlResultQuery (UPDATET (TableName a)) (TableName b) (JoinTableList c)) =
+    object ["command" .= A.String a, "selectName" .= A.String b, "joins" .= c]
+  toJSON (SqlResultQuery (DELETET (TableName a)) (TableName b) (JoinTableList c )) =
+    object ["command" .= A.String a, "selectName" .= A.String b, "joins" .= c]
 
 parseJoinTable :: Value -> Parser JoinTable
 parseJoinTable = withObject "object" $ \o -> do
+    a <- o .: "tableName"
+    b <- o .: "field"
+    c <- o .: "operator"
+    d <- o .: "withTable"
+    e <- o .: "withField"
+    return $ JoinTable a b c d e
+
+instance FromJSON JoinTableList where
+  parseJSON (Object o) = JoinTableList <$> (o .: "join")
+  parseJSON _ = mzero
+
+parseJoinTableList (Object o) = JoinTableList <$> (o .: "join")
+
+
+instance FromJSON JoinTable where
+    parseJSON = withObject "joins" $ \o -> do
+    a <- o .: "tableName"
+    b <- o .: "field"
+    c <- o .: "operator"
+    d <- o .: "withTable"
+    e <- o .: "withField"
+    return $ JoinTable a b c d e
+
+parserJoinTable (Object o) =  do
     a <- o .: "tableName"
     b <- o .: "field"
     c <- o .: "operator"
@@ -114,6 +127,9 @@ getCommandArg q =
 getSelectTableArg :: SqlQuery -> TableName
 getSelectTableArg q = TableName $ selectName q
 
+getJoinTableArg :: SqlQuery -> JoinTableList
+getJoinTableArg q =  JoinTableList $ parserJoinTable q
+
 
 getApiR :: Handler Value
 getApiR = do
@@ -122,4 +138,4 @@ getApiR = do
 postApiR :: Handler Value
 postApiR = do
   sql <- requireJsonBody :: Handler SqlQuery
-  return $ A.toJSON $  SqlResultQuery  (getCommandArg sql)  (getSelectTableArg  sql)
+  return $ A.toJSON $  SqlResultQuery  (getCommandArg sql)  (getSelectTableArg  sql) (getJoinTableArg sql)
