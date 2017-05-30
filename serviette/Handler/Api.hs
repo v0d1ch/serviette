@@ -112,7 +112,7 @@ getCommandArg q =
     where c = TableName $ command q
 
 getSelectTableArg :: SqlQuery -> TableName
-getSelectTableArg q = undefined
+getSelectTableArg q = TableName $ selectName q
 
 
 getApiR :: Handler Value
@@ -122,4 +122,4 @@ getApiR = do
 postApiR :: Handler Value
 postApiR = do
   sql <- requireJsonBody :: Handler SqlQuery
-  return $ A.toJSON $  SqlResultQuery $ getCommandArg getSelectTableArg sql
+  return $ A.toJSON $  SqlResultQuery  (getCommandArg sql)  (getSelectTableArg  sql)
