@@ -6,39 +6,27 @@ import qualified Data.Aeson          as A
 import           Data.Aeson.Types    as AT
 import           Import
 
--- | JSON Example
-{-
-   received JSON example
-   {
-     sql:{
-      format:"raw",
-      command : "SELECT | INSERT | UPDATE | DELETE",
-      selectName: "users",
-      join:[
-          {tableName:"contracts",field:"contractField",operator:"",withTable:"users", withField:"usersField"},
-          {tableName:"commissions",field:"contractField",operator:"",withTable:"contracts", withField:"usersField"}
-
-      ],
-      whereCondition:[
-          {tableName:"commissions",field:"contractField",operator:"", fieldValue:1}
-      ],
-     }
-   }
-
--}
-
 
 -- | Type declaration
 
 data TableName  = TableName Text deriving (Show, Generic)
+
 data ColumnName = ColumnName Text deriving (Show, Generic)
+
 data FieldValue = Int | String deriving (Show, Generic)
+
 data Operator   = Equals | NotEquals | LargerThan | LessThan | NotNull | Null deriving (Show, Generic)
+
 data Format     = Format {getFormat :: Int} deriving (Show, Eq)
+
 data Command    = SELECTT TableName | INSERTT TableName | UPDATET TableName | DELETET TableName deriving (Show, Generic)
+
 data JoinTableList = JoinTableList A.Array deriving (Show, Generic)
+
 data JoinTable  = JoinTable Text Text Text Text Text deriving (Show, Generic)
+
 data Where      = Where TableName ColumnName Operator FieldValue deriving (Show, Generic)
+
 data SqlQuery = SqlQuery
   { format :: Int
   , command :: Text
@@ -47,7 +35,11 @@ data SqlQuery = SqlQuery
   , whereCondition :: !Array
   } deriving (Show)
 
-data SqlResultQuery = SqlResultQuery Command  TableName JoinTableList  deriving (Show, Generic)
+data SqlResultQuery =
+  SqlResultQuery Command
+                 TableName
+                 JoinTableList
+  deriving (Show, Generic)
 data SqlRaw = SqlRaw  Command  TableName JoinTableList
 
 
@@ -157,3 +149,24 @@ postApiR = do
            (getCommandArg sql)
            (getSelectTableArg sql)
            (getJoinTableArg sql)
+
+-- | JSON Example
+{-
+   received JSON example
+   {
+     sql:{
+      format:"raw",
+      command : "SELECT | INSERT | UPDATE | DELETE",
+      selectName: "users",
+      join:[
+          {tableName:"contracts",field:"contractField",operator:"",withTable:"users", withField:"usersField"},
+          {tableName:"commissions",field:"contractField",operator:"",withTable:"contracts", withField:"usersField"}
+
+      ],
+      whereCondition:[
+          {tableName:"commissions",field:"contractField",operator:"", fieldValue:1}
+      ],
+     }
+   }
+
+-}
