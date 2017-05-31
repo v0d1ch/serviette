@@ -121,6 +121,8 @@ getJoinTableArg q =  JoinTableList $ joinTables q
 getFormatArg :: SqlQuery -> Int 
 getFormatArg q =  getFormat $ Format $ format q
 
+formatRawSql :: SqlQuery -> Text 
+formatRawSql sql = command sql ++ " " ++ selectName sql
 
 getApiR :: Handler Value
 getApiR = do
@@ -131,7 +133,7 @@ postApiR = do
   sql <- requireJsonBody :: Handler SqlQuery
   let f = getFormatArg sql
   case f of
-    1 -> return $ A.String "Serviette - Raw Query"
+    1 -> return $ A.String $ formatRawSql sql
     _ -> return $
          A.toJSON $
          SqlResultQuery
