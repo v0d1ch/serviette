@@ -36,7 +36,7 @@ data ColumnName = ColumnName Text deriving (Show, Generic)
 data FieldValue = Int | String deriving (Show, Generic)
 data Operator   = Equals | NotEquals | LargerThan | LessThan | NotNull | Null deriving (Show, Generic)
 data Command    = SELECTT TableName | INSERTT TableName | UPDATET TableName | DELETET TableName deriving (Show, Generic)
-newtype JoinTableList = JoinTableList {jtList :: [JoinTable]} deriving (Show, Generic)
+data JoinTableList = JoinTableList A.Array deriving (Show, Generic)
 data JoinTable  = JoinTable Text Text Text Text Text deriving (Show, Generic)
 data Where      = Where TableName ColumnName Operator FieldValue deriving (Show, Generic)
 data Groupby    = Groupby ColumnName deriving (Show, Generic)
@@ -48,7 +48,7 @@ instance ToJSON JoinTable
 data SqlQuery = SqlQuery
   { command        :: Text
   , selectName     :: Text
-  , joinTables     :: JoinTableList
+  , joinTables     :: !Array 
   , whereCondition :: !Array
   , groupByFields  :: !Array
   , orderByFields  :: !Array
@@ -130,7 +130,7 @@ getSelectTableArg :: SqlQuery -> TableName
 getSelectTableArg q = TableName $ selectName q
 
 getJoinTableArg :: SqlQuery -> JoinTableList
-getJoinTableArg q =  joinTables q
+getJoinTableArg q =  JoinTableList $ joinTables q
 
 
 getApiR :: Handler Value
