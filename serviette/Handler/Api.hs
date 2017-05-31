@@ -5,6 +5,8 @@ module Handler.Api where
 import qualified Data.Aeson          as A
 import           Data.Aeson.Types    as AT
 import           Import
+
+-- | JSON Example
 {-
    received JSON example
    {
@@ -25,7 +27,9 @@ import           Import
 
 -}
 
+
 -- | Type declaration
+
 data TableName  = TableName Text deriving (Show, Generic)
 data ColumnName = ColumnName Text deriving (Show, Generic)
 data FieldValue = Int | String deriving (Show, Generic)
@@ -35,10 +39,6 @@ data Command    = SELECTT TableName | INSERTT TableName | UPDATET TableName | DE
 data JoinTableList = JoinTableList A.Array deriving (Show, Generic)
 data JoinTable  = JoinTable Text Text Text Text Text deriving (Show, Generic)
 data Where      = Where TableName ColumnName Operator FieldValue deriving (Show, Generic)
-
-instance FromJSON JoinTableList
-instance ToJSON JoinTable
-
 data SqlQuery = SqlQuery
   { format :: Int
   , command :: Text
@@ -50,6 +50,32 @@ data SqlQuery = SqlQuery
 data SqlResultQuery = SqlResultQuery Command  TableName JoinTableList  deriving (Show, Generic)
 data SqlRaw = SqlRaw  Command  TableName JoinTableList
 
+
+-- | Instances
+
+instance FromJSON JoinTableList
+instance ToJSON JoinTable
+
+instance FromJSON JoinTable where
+    parseJSON = withObject "joins" $ \o -> do
+    a <- o .: "tableName"
+    b <- o .: "field"
+    c <- o .: "operator"
+    d <- o .: "withTable"
+    e <- o .: "withField"
+    return $ JoinTable a b c d e
+
+
+instance FromJSON SqlQuery where
+    parseJSON = withObject "story" $ \o -> do
+    format         <- o .: "format"
+    command        <- o .: "command"
+    selectName     <- o .: "selectName"
+    joinTables     <- o .: "join"
+    whereCondition <- o .: "whereCondition"
+    return SqlQuery{..}
+
+
 instance ToJSON SqlResultQuery where
   toJSON (SqlResultQuery (SELECTT (TableName a)) (TableName b) (JoinTableList c)) =
     object ["command" .= A.String a, "selectName" .= A.String b, "joins" .= c]
@@ -59,6 +85,9 @@ instance ToJSON SqlResultQuery where
     object ["command" .= A.String a, "selectName" .= A.String b, "joins" .= c]
   toJSON (SqlResultQuery (DELETET (TableName a)) (TableName b) (JoinTableList c )) =
     object ["command" .= A.String a, "selectName" .= A.String b, "joins" .= c]
+
+
+-- | Parsers
 
 parseJoinTable :: Value -> Parser JoinTable
 parseJoinTable = withObject "object" $ \o -> do
@@ -73,15 +102,6 @@ parseJoinTableList :: Value -> Parser JoinTableList
 parseJoinTableList (Object o) = JoinTableList <$> (o .: "join")
 parseJoinTableList _ = mzero
 
-instance FromJSON JoinTable where
-    parseJSON = withObject "joins" $ \o -> do
-    a <- o .: "tableName"
-    b <- o .: "field"
-    c <- o .: "operator"
-    d <- o .: "withTable"
-    e <- o .: "withField"
-    return $ JoinTable a b c d e
-
 parserJoinTable :: Value -> Parser JoinTable
 parserJoinTable (Object o) =  do
     a <- o .: "tableName"
@@ -92,14 +112,8 @@ parserJoinTable (Object o) =  do
     return $ JoinTable a b c d e
 parserJoinTable _ = mzero
 
-instance FromJSON SqlQuery where
-    parseJSON = withObject "story" $ \o -> do
-    format         <- o .: "format"
-    command        <- o .: "command"
-    selectName     <- o .: "selectName"
-    joinTables     <- o .: "join"
-    whereCondition <- o .: "whereCondition"
-    return SqlQuery{..}
+
+-- | Various Getters
 
 getCommandArg :: SqlQuery -> Command
 getCommandArg q =
@@ -118,11 +132,14 @@ getSelectTableArg q = TableName $ selectName q
 getJoinTableArg :: SqlQuery -> JoinTableList
 getJoinTableArg q =  JoinTableList $ joinTables q
 
-getFormatArg :: SqlQuery -> Int 
+getFormatArg :: SqlQuery -> Int
 getFormatArg q =  getFormat $ Format $ format q
 
-formatRawSql :: SqlQuery -> Text 
+formatRawSql :: SqlQuery -> Text
 formatRawSql sql = command sql ++ " " ++ selectName sql
+
+
+-- | Handlers
 
 getApiR :: Handler Value
 getApiR = do
