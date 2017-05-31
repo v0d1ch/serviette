@@ -1,13 +1,10 @@
 {-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE OverloadedStrings #-}
 module Handler.Api where
 
 import qualified Data.Aeson          as A
 import           Data.Aeson.Types    as AT
-import qualified Data.Vector as V
 import           Import
-import qualified Data.HashMap.Strict as HM
 {-
    received JSON example
    {
@@ -34,16 +31,19 @@ import qualified Data.HashMap.Strict as HM
 -}
 
 -- | Type declaration
-data TableName  = TableName Text deriving (Show, Generic, ToJSON, FromJSON)
-data ColumnName = ColumnName Text deriving (Show, Generic, ToJSON, FromJSON)
-data FieldValue = Int | String deriving (Show, Generic, ToJSON, FromJSON)
-data Operator   = Equals | NotEquals | LargerThan | LessThan | NotNull | Null deriving (Show, Generic, ToJSON, FromJSON)
-data Command    = SELECTT TableName | INSERTT TableName | UPDATET TableName | DELETET TableName deriving (Show, Generic, ToJSON, FromJSON)
-newtype JoinTableList = JoinTableList {jtList :: [JoinTable]} deriving (Show, Generic, ToJSON)
-data JoinTable  = JoinTable Text Text Text Text Text deriving (Show, Generic, ToJSON)
-data Where      = Where TableName ColumnName Operator FieldValue deriving (Show, Generic, ToJSON, FromJSON)
-data Groupby    = Groupby ColumnName deriving (Show, Generic, ToJSON, FromJSON)
-data Orderby    = Orderby ColumnName deriving (Show, Generic, ToJSON, FromJSON)
+data TableName  = TableName Text deriving (Show, Generic)
+data ColumnName = ColumnName Text deriving (Show, Generic)
+data FieldValue = Int | String deriving (Show, Generic)
+data Operator   = Equals | NotEquals | LargerThan | LessThan | NotNull | Null deriving (Show, Generic)
+data Command    = SELECTT TableName | INSERTT TableName | UPDATET TableName | DELETET TableName deriving (Show, Generic)
+newtype JoinTableList = JoinTableList {jtList :: [JoinTable]} deriving (Show, Generic)
+data JoinTable  = JoinTable Text Text Text Text Text deriving (Show, Generic)
+data Where      = Where TableName ColumnName Operator FieldValue deriving (Show, Generic)
+data Groupby    = Groupby ColumnName deriving (Show, Generic)
+data Orderby    = Orderby ColumnName deriving (Show, Generic)
+
+instance FromJSON JoinTableList
+instance ToJSON JoinTable
 
 data SqlQuery = SqlQuery
   { command        :: Text
@@ -55,7 +55,7 @@ data SqlQuery = SqlQuery
 
   } deriving (Show)
 
-data SqlResultQuery =  SqlResultQuery Command  TableName JoinTableList  deriving (Show, Generic, FromJSON)
+data SqlResultQuery =  SqlResultQuery Command  TableName JoinTableList  deriving (Show, Generic)
 
 -- (Maybe [JoinTable]) [Where] (Maybe Groupby) (Maybe Orderby)
 
@@ -78,12 +78,13 @@ parseJoinTable = withObject "object" $ \o -> do
     e <- o .: "withField"
     return $ JoinTable a b c d e
 
-instance FromJSON JoinTableList where
-  parseJSON (Object o) = JoinTableList <$> (o .: "join")
-  parseJSON _ = mzero
+-- instance FromJSON JoinTableList where
+--   parseJSON (Object o) = JoinTableList <$> (o .: "join")
+--   parseJSON _ = error "do a better job!" 
 
+parseJoinTableList :: Value -> Parser JoinTableList
 parseJoinTableList (Object o) = JoinTableList <$> (o .: "join")
-
+parseJoinTableList _ = mzero
 
 instance FromJSON JoinTable where
     parseJSON = withObject "joins" $ \o -> do
@@ -94,6 +95,7 @@ instance FromJSON JoinTable where
     e <- o .: "withField"
     return $ JoinTable a b c d e
 
+parserJoinTable :: Value -> Parser JoinTable
 parserJoinTable (Object o) =  do
     a <- o .: "tableName"
     b <- o .: "field"
@@ -101,7 +103,7 @@ parserJoinTable (Object o) =  do
     d <- o .: "withTable"
     e <- o .: "withField"
     return $ JoinTable a b c d e
-
+parserJoinTable _ = mzero
 
 instance FromJSON SqlQuery where
     parseJSON = withObject "story" $ \o -> do
@@ -128,7 +130,7 @@ getSelectTableArg :: SqlQuery -> TableName
 getSelectTableArg q = TableName $ selectName q
 
 getJoinTableArg :: SqlQuery -> JoinTableList
-getJoinTableArg q =  JoinTableList $ parserJoinTable q
+getJoinTableArg q =  joinTables q
 
 
 getApiR :: Handler Value
