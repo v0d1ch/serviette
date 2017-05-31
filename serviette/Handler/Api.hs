@@ -19,12 +19,6 @@ import           Import
       whereCondition:[
           {tableName:"commissions",field:"contractField",operator:"", fieldValue:1}
       ],
-      groupByFields:[
-
-      ],
-      orderByFields:[
-
-      ]
      }
    }
 
@@ -39,8 +33,6 @@ data Command    = SELECTT TableName | INSERTT TableName | UPDATET TableName | DE
 data JoinTableList = JoinTableList A.Array deriving (Show, Generic)
 data JoinTable  = JoinTable Text Text Text Text Text deriving (Show, Generic)
 data Where      = Where TableName ColumnName Operator FieldValue deriving (Show, Generic)
-data Groupby    = Groupby ColumnName deriving (Show, Generic)
-data Orderby    = Orderby ColumnName deriving (Show, Generic)
 
 instance FromJSON JoinTableList
 instance ToJSON JoinTable
@@ -48,16 +40,12 @@ instance ToJSON JoinTable
 data SqlQuery = SqlQuery
   { command        :: Text
   , selectName     :: Text
-  , joinTables     :: !Array 
+  , joinTables     :: !Array
   , whereCondition :: !Array
-  , groupByFields  :: !Array
-  , orderByFields  :: !Array
 
   } deriving (Show)
 
 data SqlResultQuery =  SqlResultQuery Command  TableName JoinTableList  deriving (Show, Generic)
-
--- (Maybe [JoinTable]) [Where] (Maybe Groupby) (Maybe Orderby)
 
 instance ToJSON SqlResultQuery where
   toJSON (SqlResultQuery (SELECTT (TableName a)) (TableName b) (JoinTableList c)) =
@@ -77,10 +65,6 @@ parseJoinTable = withObject "object" $ \o -> do
     d <- o .: "withTable"
     e <- o .: "withField"
     return $ JoinTable a b c d e
-
--- instance FromJSON JoinTableList where
---   parseJSON (Object o) = JoinTableList <$> (o .: "join")
---   parseJSON _ = error "do a better job!" 
 
 parseJoinTableList :: Value -> Parser JoinTableList
 parseJoinTableList (Object o) = JoinTableList <$> (o .: "join")
@@ -111,8 +95,6 @@ instance FromJSON SqlQuery where
     selectName     <- o .: "selectName"
     joinTables     <- o .: "join"
     whereCondition <- o .: "whereCondition"
-    groupByFields  <- o .: "groupByFields"
-    orderByFields  <- o .: "orderByFields"
     return SqlQuery{..}
 
 getCommandArg :: SqlQuery -> Command
