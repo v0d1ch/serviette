@@ -4,29 +4,29 @@ module Handler.Api where
 
 import qualified Data.Aeson          as A
 import           Data.Aeson.Types    as AT
+import qualified Data.Vector as V
 import           Import
-
+import Control.Monad.State.Strict as ST
 
 -- | Type declaration
 
 data TableName  = TableName Text deriving (Show, Generic)
-
 data ColumnName = ColumnName Text deriving (Show, Generic)
-
 data FieldValue = Int | String deriving (Show, Generic)
-
 data Operator   = Equals | NotEquals | LargerThan | LessThan | NotNull | Null deriving (Show, Generic)
-
 data Format     = Format {getFormat :: Int} deriving (Show, Eq)
-
 data Command    = SELECTT TableName | INSERTT TableName | UPDATET TableName | DELETET TableName deriving (Show, Generic)
-
 data JoinTableList = JoinTableList A.Array deriving (Show, Generic)
 
-data JoinTable  = JoinTable Text Text Text Text Text deriving (Show, Generic)
+data JoinTable = JoinTable
+  { tablename :: Text
+  , field :: Text
+  , operator :: Text
+  , withTable :: Text
+  , whereConditionJoin :: Text
+  } deriving (Show, Generic)
 
 data Where      = Where TableName ColumnName Operator FieldValue deriving (Show, Generic)
-
 data SqlQuery = SqlQuery
   { format :: Int
   , command :: Text
@@ -127,8 +127,19 @@ getJoinTableArg q =  JoinTableList $ joinTables q
 getFormatArg :: SqlQuery -> Int
 getFormatArg q =  getFormat $ Format $ format q
 
+getJoinTablesList :: A.Array -> Parser (Vector JoinTable)
+getJoinTablesList joins =  mapM parseJoinTable joins
+
+
+getJoinTablesStr :: Parser (Vector JoinTable) -> Maybe Text
+getJoinTablesStr joins = do
+  j <- joins
+  let tn = map tablename  (V.toList j)
+  return $ intercalate " " tn
+
 formatRawSql :: SqlQuery -> Text
-formatRawSql sql = command sql ++ " " ++ selectName sql
+formatRawSql sql = command sql ++ " " ++ selectName sql ++  joins
+  where joins = getJoinTablesList $ joinTables sql
 
 
 -- | Handlers

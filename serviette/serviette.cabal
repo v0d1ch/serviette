@@ -92,6 +92,7 @@ library
                  , time
                  , case-insensitive
                  , wai
+                 , mtl
 
 executable         serviette
     if flag(library-only)
