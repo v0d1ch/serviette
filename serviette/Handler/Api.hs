@@ -1,9 +1,9 @@
-{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE OverloadedStrings #-}
 module Handler.Api where
 
-import qualified Data.Aeson          as A
-import           Data.Aeson.Types    as AT
+import qualified Data.Aeson       as A
+import           Data.Aeson.Types as AT
 import           Import
 
 
@@ -31,6 +31,9 @@ data Operator
   | Null
   deriving (Show, Generic)
 
+data Action =
+  Action Text deriving (Show, Generic)
+
 data Command
   = SELECTT TableName
   | INSERTT TableName
@@ -42,15 +45,12 @@ data Format = Format
   { getFormat :: Int
   } deriving (Show, Eq)
 
-data JoinTableList = JoinTableList
-  { jTable :: A.Array
-  } deriving (Show, Generic)
 
 data JoinTable = JoinTable
-  { tablename :: Text
-  , field :: Text
-  , operator :: Text
-  , withTable :: Text
+  { tablename          :: Text
+  , field              :: Text
+  , operator           :: Text
+  , withTable          :: Text
   , whereConditionJoin :: Text
   } deriving (Show, Generic)
 
@@ -62,77 +62,45 @@ data Where =
   deriving (Show, Generic)
 
 data SqlQuery = SqlQuery
-  { format :: Int
-  , command :: Text
-  , selectName :: Text
-  , joinTables :: !Array
+  { format         :: Int
+  , command        :: Action
+  , selectName     :: TableName
+  , joinTables     :: [JoinTable]
   , whereCondition :: !Array
-  } deriving (Show)
+  } deriving (Show, Generic)
 
 data SqlResultQuery =
   SqlResultQuery Command
                  TableName
-                 JoinTableList
+                 [JoinTable]
+
   deriving (Show, Generic)
 
 data SqlRaw =
   SqlRaw Command
          TableName
-         JoinTableList
+         [JoinTable]
 
 
 -- | Instances
 
-instance FromJSON JoinTableList
-instance ToJSON JoinTable
+instance FromJSON TableName
+instance ToJSON TableName
 
-instance FromJSON JoinTable where
-  parseJSON (Object v) = parserJoinTable v
-  parseJSON _          = empty
+instance FromJSON Action
+instance ToJSON Action
 
-instance FromJSON SqlQuery where
-    parseJSON = withObject "story" $ \o -> do
-    format         <- o .: "format"
-    command        <- o .: "command"
-    selectName     <- o .: "selectName"
-    joinTables     <- o .: "join"
-    whereCondition <- o .: "whereCondition"
-    return SqlQuery{..}
+instance FromJSON Command
+instance ToJSON Command
 
+instance FromJSON  JoinTable
+instance ToJSON  JoinTable
 
-instance ToJSON SqlResultQuery where
-  toJSON (SqlResultQuery (SELECTT (TableName a)) (TableName b) (JoinTableList c)) =
-    object ["command" .= A.String a, "selectName" .= A.String b, "joins" .= c]
-  toJSON (SqlResultQuery (INSERTT (TableName a)) (TableName b) (JoinTableList c)) =
-    object ["command" .= A.String a, "selectName" .= A.String b, "joins" .= c ]
-  toJSON (SqlResultQuery (UPDATET (TableName a)) (TableName b) (JoinTableList c)) =
-    object ["command" .= A.String a, "selectName" .= A.String b, "joins" .= c]
-  toJSON (SqlResultQuery (DELETET (TableName a)) (TableName b) (JoinTableList c )) =
-    object ["command" .= A.String a, "selectName" .= A.String b, "joins" .= c]
+instance FromJSON SqlQuery
+instance ToJSON SqlQuery
 
-
--- | Parsers
-
-parseJoinTableList :: Value -> Parser JoinTableList
-parseJoinTableList (Object o) = JoinTableList <$> (o .: "join")
-parseJoinTableList _ = mzero
-
-parserSqlQuery :: Object -> Parser SqlQuery
-parserSqlQuery o = SqlQuery <$>
-    o .: "format"      <*>
-    o .: "command"     <*>
-    o .: "selectName"  <*>
-    o .: "join"        <*>
-    o .: "whereCondition"
-
-
-parserJoinTable :: Object -> Parser JoinTable
-parserJoinTable o = JoinTable <$>
-    o .: "tableName" <*>
-    o .: "field"     <*>
-    o .: "operator"  <*>
-    o .: "withTable" <*>
-    o .: "withField"
+instance FromJSON SqlResultQuery
+instance ToJSON SqlResultQuery
 
 
 -- | Various Getters
@@ -140,30 +108,23 @@ parserJoinTable o = JoinTable <$>
 getCommandArg :: SqlQuery -> Command
 getCommandArg q =
     case c of
-      TableName "SELECT" -> SELECTT c
-      TableName "INSERT" -> INSERTT c
-      TableName "UPDATE" -> UPDATET c
-      TableName "DELETE" -> DELETET c
-      _                  -> SELECTT c
+      Action "SELECT" -> SELECTT d
+      Action "INSERT" -> INSERTT d
+      Action "UPDATE" -> UPDATET d
+      Action "DELETE" -> DELETET d
+      _               -> SELECTT d
 
-    where c = TableName $ command q
+    where c =  command q
+          d = selectName q
 
 getSelectTableArg :: SqlQuery -> TableName
-getSelectTableArg q = TableName $ selectName q
+getSelectTableArg q = selectName q
 
-getJoinTableArg :: SqlQuery -> JoinTableList
-getJoinTableArg q =  JoinTableList $ joinTables q
+getJoinTableArg :: SqlQuery -> [JoinTable]
+getJoinTableArg q =  joinTables q
 
 getFormatArg :: SqlQuery -> Int
 getFormatArg q =  getFormat $ Format $ format q
-
-
-getJoinTablesStr :: A.Array -> Text
-getJoinTablesStr joins = undefined 
-
-formatRawSql :: SqlQuery -> Text
-formatRawSql sql = command sql ++ " " ++ selectName sql ++ joins
-   where joins = getJoinTablesStr $  joinTables sql
 
 
 -- | Handlers
@@ -175,15 +136,10 @@ getApiR = do
 postApiR :: Handler Value
 postApiR = do
   sql <- requireJsonBody :: Handler SqlQuery
-  let f = getFormatArg sql
-  case f of
-    1 -> return $ A.String $ formatRawSql sql
-    _ -> return $
-         A.toJSON $
-         SqlResultQuery
-           (getCommandArg sql)
-           (getSelectTableArg sql)
-           (getJoinTableArg sql)
+  let sqlR = SqlResultQuery (getCommandArg sql) (getSelectTableArg sql) (getJoinTableArg sql)
+  return $
+    A.String $ "Serviette"
+
 
 -- | JSON Example
 {-
