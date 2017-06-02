@@ -47,10 +47,10 @@ data Format = Format
 
 
 data JoinTable = JoinTable
-  { tablename          :: Text
+  { tablename          :: TableName
   , field              :: Text
   , operator           :: Text
-  , withTable          :: Text
+  , withTable          :: TableName
   , whereConditionJoin :: Text
   } deriving (Show, Generic)
 
