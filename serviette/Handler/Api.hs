@@ -50,6 +50,7 @@ data JoinTable = JoinTable
   , field              :: ColumnName
   , operator           :: Operator
   , withTable          :: TableName
+  , withField          :: ColumnName
   , whereConditionJoin :: Text
   } deriving (Show, Generic)
 
@@ -75,11 +76,16 @@ data SqlRaw = SqlRaw Command TableName [JoinTable]
 -- | Various Getters
 
 extractAction :: Action -> Text
-extractAction (Action t) = t
+extractAction (Action t) = t ++ " "
 
 extractTableName :: TableName -> Text
 extractTableName (TableName t) = t
 
+extractColumnName :: ColumnName -> Text
+extractColumnName (ColumnName t) = t
+
+extractOperator :: Operator -> Text
+extractOperator (Operator t) = t
 
 getActionArg :: SqlQuery -> Action
 getActionArg q = action q
@@ -93,8 +99,19 @@ getJoinTableArg q =  joinTables q
 getFormatArg :: SqlQuery -> Int
 getFormatArg q =  getFormat $ Format $ format q
 
+formatJoinStr :: JoinTable -> Text
+formatJoinStr j = " join "
+  ++ (extractTableName $ tablename j) ++ " on "
+  ++ (extractColumnName $ field j) ++ " "
+  ++ (extractOperator $ operator j) ++ " "
+  ++ (extractTableName $ withTable j) ++ "."
+  ++ (extractColumnName $ withField j) ++ " "
+
+
 rawSqlStr :: SqlResultQuery -> Text
-rawSqlStr sql = (extractAction $ getAction sql) ++ " " ++ (extractTableName $ getSelectTable sql)
+rawSqlStr sql = (extractAction $ getAction sql)
+  ++  (extractTableName $ getSelectTable sql)
+  ++  (concat . map formatJoinStr $ getJoins sql )
 
 -- | Handlers
 
@@ -107,7 +124,6 @@ postApiR = do
   sql <- requireJsonBody :: Handler SqlQuery
   let sqlR = SqlResultQuery (getActionArg sql) (getSelectTableArg sql) (getJoinTableArg sql)
   return $ A.String $ rawSqlStr sqlR
-  -- return $ A.String $ "Serviette"
 
 
 -- | Instances
