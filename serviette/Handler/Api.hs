@@ -4,19 +4,47 @@ module Handler.Api where
 
 import qualified Data.Aeson          as A
 import           Data.Aeson.Types    as AT
-import qualified Data.Vector as V
 import           Import
-import Control.Monad.State.Strict as ST
+
 
 -- | Type declaration
 
-data TableName  = TableName Text deriving (Show, Generic)
-data ColumnName = ColumnName Text deriving (Show, Generic)
-data FieldValue = Int | String deriving (Show, Generic)
-data Operator   = Equals | NotEquals | LargerThan | LessThan | NotNull | Null deriving (Show, Generic)
-data Format     = Format {getFormat :: Int} deriving (Show, Eq)
-data Command    = SELECTT TableName | INSERTT TableName | UPDATET TableName | DELETET TableName deriving (Show, Generic)
-data JoinTableList = JoinTableList A.Array deriving (Show, Generic)
+data TableName =
+  TableName Text
+  deriving (Show, Generic)
+
+data ColumnName =
+  ColumnName Text
+  deriving (Show, Generic)
+
+data FieldValue
+  = Int
+  | String
+  deriving (Show, Generic)
+
+data Operator
+  = Equals
+  | NotEquals
+  | LargerThan
+  | LessThan
+  | NotNull
+  | Null
+  deriving (Show, Generic)
+
+data Command
+  = SELECTT TableName
+  | INSERTT TableName
+  | UPDATET TableName
+  | DELETET TableName
+  deriving (Show, Generic)
+
+data Format = Format
+  { getFormat :: Int
+  } deriving (Show, Eq)
+
+data JoinTableList = JoinTableList
+  { jTable :: A.Array
+  } deriving (Show, Generic)
 
 data JoinTable = JoinTable
   { tablename :: Text
@@ -26,7 +54,13 @@ data JoinTable = JoinTable
   , whereConditionJoin :: Text
   } deriving (Show, Generic)
 
-data Where      = Where TableName ColumnName Operator FieldValue deriving (Show, Generic)
+data Where =
+  Where TableName
+        ColumnName
+        Operator
+        FieldValue
+  deriving (Show, Generic)
+
 data SqlQuery = SqlQuery
   { format :: Int
   , command :: Text
@@ -40,7 +74,11 @@ data SqlResultQuery =
                  TableName
                  JoinTableList
   deriving (Show, Generic)
-data SqlRaw = SqlRaw  Command  TableName JoinTableList
+
+data SqlRaw =
+  SqlRaw Command
+         TableName
+         JoinTableList
 
 
 -- | Instances
@@ -49,14 +87,8 @@ instance FromJSON JoinTableList
 instance ToJSON JoinTable
 
 instance FromJSON JoinTable where
-    parseJSON = withObject "joins" $ \o -> do
-    a <- o .: "tableName"
-    b <- o .: "field"
-    c <- o .: "operator"
-    d <- o .: "withTable"
-    e <- o .: "withField"
-    return $ JoinTable a b c d e
-
+  parseJSON (Object v) = parserJoinTable v
+  parseJSON _          = empty
 
 instance FromJSON SqlQuery where
     parseJSON = withObject "story" $ \o -> do
@@ -81,28 +113,26 @@ instance ToJSON SqlResultQuery where
 
 -- | Parsers
 
-parseJoinTable :: Value -> Parser JoinTable
-parseJoinTable = withObject "object" $ \o -> do
-    a <- o .: "tableName"
-    b <- o .: "field"
-    c <- o .: "operator"
-    d <- o .: "withTable"
-    e <- o .: "withField"
-    return $ JoinTable a b c d e
-
 parseJoinTableList :: Value -> Parser JoinTableList
 parseJoinTableList (Object o) = JoinTableList <$> (o .: "join")
 parseJoinTableList _ = mzero
 
-parserJoinTable :: Value -> Parser JoinTable
-parserJoinTable (Object o) =  do
-    a <- o .: "tableName"
-    b <- o .: "field"
-    c <- o .: "operator"
-    d <- o .: "withTable"
-    e <- o .: "withField"
-    return $ JoinTable a b c d e
-parserJoinTable _ = mzero
+parserSqlQuery :: Object -> Parser SqlQuery
+parserSqlQuery o = SqlQuery <$>
+    o .: "format"      <*>
+    o .: "command"     <*>
+    o .: "selectName"  <*>
+    o .: "join"        <*>
+    o .: "whereCondition"
+
+
+parserJoinTable :: Object -> Parser JoinTable
+parserJoinTable o = JoinTable <$>
+    o .: "tableName" <*>
+    o .: "field"     <*>
+    o .: "operator"  <*>
+    o .: "withTable" <*>
+    o .: "withField"
 
 
 -- | Various Getters
@@ -127,19 +157,13 @@ getJoinTableArg q =  JoinTableList $ joinTables q
 getFormatArg :: SqlQuery -> Int
 getFormatArg q =  getFormat $ Format $ format q
 
-getJoinTablesList :: A.Array -> Parser (Vector JoinTable)
-getJoinTablesList joins =  mapM parseJoinTable joins
 
-
-getJoinTablesStr :: Parser (Vector JoinTable) -> Maybe Text
-getJoinTablesStr joins = do
-  j <- joins
-  let tn = map tablename  (V.toList j)
-  return $ intercalate " " tn
+getJoinTablesStr :: A.Array -> Text
+getJoinTablesStr joins = undefined 
 
 formatRawSql :: SqlQuery -> Text
-formatRawSql sql = command sql ++ " " ++ selectName sql ++  joins
-  where joins = getJoinTablesList $ joinTables sql
+formatRawSql sql = command sql ++ " " ++ selectName sql ++ joins
+   where joins = getJoinTablesStr $  joinTables sql
 
 
 -- | Handlers
