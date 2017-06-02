@@ -9,20 +9,18 @@ import           Import
 
 -- | Type declaration
 
-data TableName =
-  TableName Text
+data TableName = TableName Text
   deriving (Show, Generic)
 
-data ColumnName =
-  ColumnName Text
+data ColumnName = ColumnName Text
   deriving (Show, Generic)
 
-data FieldValue
-  = Int
-  | String
+data FieldValue = FieldValue Text
   deriving (Show, Generic)
 
-data Operator
+data Operator = Operator Text
+  deriving(Show, Generic)
+data OperatorData
   = Equals
   | NotEquals
   | LargerThan
@@ -31,8 +29,8 @@ data Operator
   | Null
   deriving (Show, Generic)
 
-data Action =
-  Action Text deriving (Show, Generic)
+data Action = Action Text
+  deriving (Show, Generic)
 
 data Command
   = SELECTT TableName
@@ -48,17 +46,13 @@ data Format = Format
 
 data JoinTable = JoinTable
   { tablename          :: TableName
-  , field              :: Text
-  , operator           :: Text
+  , field              :: ColumnName
+  , operator           :: Operator
   , withTable          :: TableName
   , whereConditionJoin :: Text
   } deriving (Show, Generic)
 
-data Where =
-  Where TableName
-        ColumnName
-        Operator
-        FieldValue
+data Where  = Where TableName ColumnName Operator FieldValue
   deriving (Show, Generic)
 
 data SqlQuery = SqlQuery
@@ -69,39 +63,10 @@ data SqlQuery = SqlQuery
   , whereCondition :: !Array
   } deriving (Show, Generic)
 
-data SqlResultQuery =
-  SqlResultQuery Command
-                 TableName
-                 [JoinTable]
-
+data SqlResultQuery = SqlResultQuery Command TableName [JoinTable]
   deriving (Show, Generic)
 
-data SqlRaw =
-  SqlRaw Command
-         TableName
-         [JoinTable]
-
-
--- | Instances
-
-instance FromJSON TableName
-instance ToJSON TableName
-
-instance FromJSON Action
-instance ToJSON Action
-
-instance FromJSON Command
-instance ToJSON Command
-
-instance FromJSON  JoinTable
-instance ToJSON  JoinTable
-
-instance FromJSON SqlQuery
-instance ToJSON SqlQuery
-
-instance FromJSON SqlResultQuery
-instance ToJSON SqlResultQuery
-
+data SqlRaw = SqlRaw Command TableName [JoinTable]
 
 -- | Various Getters
 
@@ -139,6 +104,37 @@ postApiR = do
   let sqlR = SqlResultQuery (getCommandArg sql) (getSelectTableArg sql) (getJoinTableArg sql)
   return $
     A.String $ "Serviette"
+
+
+-- | Instances
+
+instance FromJSON TableName
+instance ToJSON TableName
+
+instance FromJSON Action
+instance ToJSON Action
+
+instance FromJSON Command
+instance ToJSON Command
+
+instance FromJSON Operator
+instance ToJSON Operator
+
+instance FromJSON OperatorData
+instance ToJSON OperatorData
+
+instance FromJSON  JoinTable
+instance ToJSON  JoinTable
+
+instance FromJSON  ColumnName
+instance ToJSON ColumnName
+
+
+instance FromJSON SqlQuery
+instance ToJSON SqlQuery
+
+instance FromJSON SqlResultQuery
+instance ToJSON SqlResultQuery
 
 
 -- | JSON Example
