@@ -157,23 +157,3 @@ instance FromJSON SqlResultQuery
 instance ToJSON SqlResultQuery
 
 
--- | JSON Example
-{-
-   received JSON example
-   {
-     sql:{
-      format:"raw",
-      command : "SELECT | INSERT | UPDATE | DELETE",
-      selectName: "users",
-      join:[
-          {tableName:"contracts",field:"contractField",operator:"",withTable:"users", withField:"usersField"},
-          {tableName:"commissions",field:"contractField",operator:"",withTable:"contracts", withField:"usersField"}
-
-      ],
-      whereCondition:[
-          {tableName:"commissions",field:"contractField",operator:"", fieldValue:1}
-      ],
-     }
-   }
-
--}
