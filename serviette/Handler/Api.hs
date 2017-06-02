@@ -20,6 +20,7 @@ data FieldValue = FieldValue Text
 
 data Operator = Operator Text
   deriving(Show, Generic)
+
 data OperatorData
   = Equals
   | NotEquals
@@ -57,30 +58,31 @@ data Where  = Where TableName ColumnName Operator FieldValue
 
 data SqlQuery = SqlQuery
   { format         :: Int
-  , command        :: Action
+  , action         :: Action
   , selectName     :: TableName
   , joinTables     :: [JoinTable]
   , whereCondition :: !Array
   } deriving (Show, Generic)
 
-data SqlResultQuery = SqlResultQuery Command TableName [JoinTable]
-  deriving (Show, Generic)
+data SqlResultQuery = SqlResultQuery
+  { getAction      :: Action
+  , getSelectTable :: TableName
+  , getJoins       :: [JoinTable]
+  } deriving (Show, Generic)
 
 data SqlRaw = SqlRaw Command TableName [JoinTable]
 
 -- | Various Getters
 
-getCommandArg :: SqlQuery -> Command
-getCommandArg q =
-    case c of
-      Action "SELECT" -> SELECTT d
-      Action "INSERT" -> INSERTT d
-      Action "UPDATE" -> UPDATET d
-      Action "DELETE" -> DELETET d
-      _               -> SELECTT d
+extractAction :: Action -> Text
+extractAction (Action t) = t
 
-    where c =  command q
-          d = selectName q
+extractTableName :: TableName -> Text
+extractTableName (TableName t) = t
+
+
+getActionArg :: SqlQuery -> Action
+getActionArg q = action q
 
 getSelectTableArg :: SqlQuery -> TableName
 getSelectTableArg q = selectName q
@@ -91,6 +93,8 @@ getJoinTableArg q =  joinTables q
 getFormatArg :: SqlQuery -> Int
 getFormatArg q =  getFormat $ Format $ format q
 
+rawSqlStr :: SqlResultQuery -> Text
+rawSqlStr sql = (extractAction $ getAction sql) ++ " " ++ (extractTableName $ getSelectTable sql)
 
 -- | Handlers
 
@@ -101,9 +105,9 @@ getApiR = do
 postApiR :: Handler Value
 postApiR = do
   sql <- requireJsonBody :: Handler SqlQuery
-  let sqlR = SqlResultQuery (getCommandArg sql) (getSelectTableArg sql) (getJoinTableArg sql)
-  return $
-    A.String $ "Serviette"
+  let sqlR = SqlResultQuery (getActionArg sql) (getSelectTableArg sql) (getJoinTableArg sql)
+  return $ A.String $ rawSqlStr sqlR
+  -- return $ A.String $ "Serviette"
 
 
 -- | Instances
