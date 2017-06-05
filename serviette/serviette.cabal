@@ -22,6 +22,7 @@ library
                      Settings.StaticFiles
                      Handler.Home
                      Handler.Api
+                     Handler.ApiDataTypes
 
     if flag(dev) || flag(library-only)
         cpp-options:   -DDEVELOPMENT
