@@ -4,7 +4,6 @@
 module Handler.ApiDataTypes where
 
 import           Data.Aeson.Types as AT
-
 import           Import
 
 -- | Type declaration
@@ -15,20 +14,11 @@ data TableName = TableName Text
 data ColumnName = ColumnName Text
   deriving (Show, Generic)
 
-data FieldValue = FieldValue Text
+data FieldValue = Either String Int
   deriving (Show, Generic)
 
 data Operator = Operator Text
   deriving(Show, Generic)
-
-data OperatorData
-  = Equals
-  | NotEquals
-  | LargerThan
-  | LessThan
-  | NotNull
-  | Null
-  deriving (Show, Generic)
 
 data Action = Action Text
   deriving (Show, Generic)
@@ -54,15 +44,20 @@ data JoinTable = JoinTable
   , whereConditionJoin :: Text
   } deriving (Show, Generic)
 
-data Where  = Where TableName ColumnName Operator FieldValue
-  deriving (Show, Generic)
+data WhereCondition = WhereCondition
+  { whereTableName  :: TableName
+  , whereField      :: ColumnName
+  , whereOperator   :: Operator
+  , whereFieldValue :: FieldValue
+  } deriving (Show, Generic)
+
 
 data SqlQuery = SqlQuery
   { format         :: Int
   , action         :: Action
   , selectName     :: TableName
   , joinTables     :: [JoinTable]
-  , whereCondition :: !Array
+  , whereCondition :: [WhereCondition]
   } deriving (Show, Generic)
 
 data SqlResultQuery = SqlResultQuery
@@ -88,15 +83,14 @@ instance ToJSON Command
 instance FromJSON Operator
 instance ToJSON Operator
 
-instance FromJSON OperatorData
-instance ToJSON OperatorData
-
 instance FromJSON  JoinTable
 instance ToJSON  JoinTable
 
 instance FromJSON  ColumnName
 instance ToJSON ColumnName
 
+instance FromJSON  WhereCondition
+instance ToJSON   WhereCondition
 
 instance FromJSON SqlQuery
 instance ToJSON SqlQuery
@@ -104,4 +98,6 @@ instance ToJSON SqlQuery
 instance FromJSON SqlResultQuery
 instance ToJSON SqlResultQuery
 
+instance ToJSON FieldValue
+instance FromJSON FieldValue
 
