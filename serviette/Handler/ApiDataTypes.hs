@@ -6,7 +6,6 @@ module Handler.ApiDataTypes where
 
 import           Data.Aeson.Types as AT
 import           Import
-import           Text.Read
 
 -- | Type declaration
 
@@ -16,18 +15,10 @@ data TableName = TableName Text
 data ColumnName = ColumnName Text
   deriving (Show, Generic)
 
-
 data Operator = Operator Text
   deriving(Show, Generic)
 
 data Action = Action Text
-  deriving (Show, Generic)
-
-data Command
-  = SELECTT TableName
-  | INSERTT TableName
-  | UPDATET TableName
-  | DELETET TableName
   deriving (Show, Generic)
 
 data Format = Format
@@ -61,12 +52,11 @@ data SqlQuery = SqlQuery
   } deriving (Show, Generic)
 
 data SqlResultQuery = SqlResultQuery
-  { getAction      :: Action
-  , getSelectTable :: TableName
-  , getJoins       :: [JoinTable]
+  { getAction         :: Action
+  , getSelectTable    :: TableName
+  , getJoins          :: [JoinTable]
+  , getWhereCondition :: [WhereCondition]
   } deriving (Show, Generic)
-
-data SqlRaw = SqlRaw Command TableName [JoinTable]
 
 
 -- | Instances
@@ -76,9 +66,6 @@ instance ToJSON TableName
 
 instance FromJSON Action
 instance ToJSON Action
-
-instance FromJSON Command
-instance ToJSON Command
 
 instance FromJSON Operator
 instance ToJSON Operator

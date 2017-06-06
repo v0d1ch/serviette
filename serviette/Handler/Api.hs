@@ -28,6 +28,9 @@ getSelectTableArg q = selectName q
 getJoinTableArg :: SqlQuery -> [JoinTable]
 getJoinTableArg q =  joinTables q
 
+getWhereConditionArg :: SqlQuery -> [WhereCondition]
+getWhereConditionArg q =  whereCondition q
+
 getFormatArg :: SqlQuery -> Int
 getFormatArg q =  getFormat $ Format $ format q
 
@@ -39,11 +42,25 @@ formatJoinStr j = " join "
   ++ (extractTableName $ withTable j) ++ "."
   ++ (extractColumnName $ withField j) ++ " "
 
+formatEither :: Either String Int -> String
+formatEither a =
+  case a of
+    Left x  -> x ++ " "
+    Right y -> show y ++ " "
+
+formatWhereConditionStr :: WhereCondition -> Text
+formatWhereConditionStr j = " where "
+  ++ (extractTableName $ whereTableName j) ++ "."
+  ++ (extractColumnName $ whereField j) ++ " "
+  ++ (extractOperator $ whereOperator j) ++ " "
+  ++ (pack $ formatEither $ whereFieldValue j)
+
 
 rawSqlStr :: SqlResultQuery -> Text
 rawSqlStr sql = (extractAction $ getAction sql)
   ++  (extractTableName $ getSelectTable sql)
   ++  (concat . map formatJoinStr $ getJoins sql )
+  ++  (concat . map formatWhereConditionStr $ getWhereCondition sql)
 
 -- | Handlers
 
@@ -54,7 +71,7 @@ getApiR = do
 postApiR :: Handler Value
 postApiR = do
   sql <- requireJsonBody :: Handler SqlQuery
-  let sqlR = SqlResultQuery (getActionArg sql) (getSelectTableArg sql) (getJoinTableArg sql)
+  let sqlR = SqlResultQuery (getActionArg sql) (getSelectTableArg sql) (getJoinTableArg sql) (getWhereConditionArg sql)
   return $ A.String $ rawSqlStr sqlR
 
 
