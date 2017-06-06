@@ -1,10 +1,12 @@
 {-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards   #-}
 
 module Handler.ApiDataTypes where
 
 import           Data.Aeson.Types as AT
 import           Import
+import           Text.Read
 
 -- | Type declaration
 
@@ -14,8 +16,6 @@ data TableName = TableName Text
 data ColumnName = ColumnName Text
   deriving (Show, Generic)
 
-data FieldValue = Either String Int
-  deriving (Show, Generic)
 
 data Operator = Operator Text
   deriving(Show, Generic)
@@ -48,7 +48,7 @@ data WhereCondition = WhereCondition
   { whereTableName  :: TableName
   , whereField      :: ColumnName
   , whereOperator   :: Operator
-  , whereFieldValue :: FieldValue
+  , whereFieldValue :: Either String Int
   } deriving (Show, Generic)
 
 
@@ -89,15 +89,21 @@ instance ToJSON  JoinTable
 instance FromJSON  ColumnName
 instance ToJSON ColumnName
 
-instance FromJSON  WhereCondition
-instance ToJSON   WhereCondition
-
 instance FromJSON SqlQuery
 instance ToJSON SqlQuery
 
 instance FromJSON SqlResultQuery
 instance ToJSON SqlResultQuery
 
-instance ToJSON FieldValue
-instance FromJSON FieldValue
+instance ToJSON   WhereCondition
+instance FromJSON WhereCondition where
+    parseJSON (Object v)
+        =  WhereCondition
+        <$> v .: "whereTableName"
+        <*> v .: "whereField"
+        <*> v .: "whereOperator"
+        <*> (   (Left  <$> v .: "whereFieldValue")
+            <|> (Right <$> v .: "whereFieldValue")
+            )
+    parseJSON _  = mzero
 
