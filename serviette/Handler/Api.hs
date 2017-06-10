@@ -42,18 +42,19 @@ formatJoinStr j = " join "
   ++ (extractTableName $ withTable j) ++ "."
   ++ (extractColumnName $ withField j) ++ " "
 
-formatEither :: Either String Int -> String
-formatEither a =
+formatFieldValue :: FieldValue -> String
+formatFieldValue a =
   case a of
-    Left x  -> x ++ " "
-    Right y -> show y ++ " "
+    IntField x  -> show x
+    TextField x -> show x
+    DateField x -> show x
 
 formatWhereConditionStr :: WhereCondition -> Text
 formatWhereConditionStr j = " where "
   ++ (extractTableName $ whereTableName j) ++ "."
   ++ (extractColumnName $ whereField j) ++ " "
   ++ (extractOperator $ whereOperator j) ++ " "
-  ++ (pack $ formatEither $ whereFieldValue j)
+  ++ (pack $ formatFieldValue $ whereFieldValue j)
 
 
 rawSqlStr :: SqlResultQuery -> Text
@@ -73,6 +74,3 @@ postApiR = do
   sql <- requireJsonBody :: Handler SqlQuery
   let sqlR = SqlResultQuery (getActionArg sql) (getSelectTableArg sql) (getJoinTableArg sql) (getWhereConditionArg sql)
   return $ A.String $ rawSqlStr sqlR
-
-
-

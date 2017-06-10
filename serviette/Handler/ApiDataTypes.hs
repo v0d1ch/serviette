@@ -25,6 +25,9 @@ data Format = Format
   { getFormat :: Int
   } deriving (Show, Eq)
 
+type DateVal = Text
+
+data FieldValue = IntField Int | TextField Text | DateField DateVal deriving (Show, Generic)
 
 data JoinTable = JoinTable
   { tablename          :: TableName
@@ -39,7 +42,7 @@ data WhereCondition = WhereCondition
   { whereTableName  :: TableName
   , whereField      :: ColumnName
   , whereOperator   :: Operator
-  , whereFieldValue :: Either String Int
+  , whereFieldValue :: FieldValue
   } deriving (Show, Generic)
 
 
@@ -82,6 +85,9 @@ instance ToJSON SqlQuery
 instance FromJSON SqlResultQuery
 instance ToJSON SqlResultQuery
 
+instance FromJSON FieldValue
+instance ToJSON FieldValue
+
 instance ToJSON   WhereCondition
 instance FromJSON WhereCondition where
     parseJSON (Object v)
@@ -89,8 +95,10 @@ instance FromJSON WhereCondition where
         <$> v .: "whereTableName"
         <*> v .: "whereField"
         <*> v .: "whereOperator"
-        <*> (   (Left  <$> v .: "whereFieldValue")
-            <|> (Right <$> v .: "whereFieldValue")
+        <*> (   IntField  <$> (v .: "whereFieldValue")
+            <|> TextField <$> (v .: "whereFieldValue")
+            <|> DateField <$> (v .: "whereFieldValue")
+
             )
     parseJSON _  = mzero
 
