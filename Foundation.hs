@@ -7,7 +7,7 @@ import qualified Yesod.Core.Unsafe as Unsafe
 
 data App = App
     { appSettings    :: AppSettings
-    , appConnPool    :: ConnectionPool -- ^ Database connection pool.
+    , appConnPool    :: ConnectionPool
     , appHttpManager :: Manager
     , appLogger      :: Logger
     }

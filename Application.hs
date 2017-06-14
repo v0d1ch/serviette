@@ -24,6 +24,9 @@ import Control.Monad.Logger                 (liftLoc, runLoggingT)
 import Database.Persist.MySQL               (createMySQLPool, myConnInfo,
                                              myPoolSize, runSqlPool)
 import qualified Database.MySQL.Base as MySQL
+import Database.Persist.Postgresql          (createPostgresqlPool, pgConnStr,
+                                             pgPoolSize, runSqlPool)
+
 import Import
 import Language.Haskell.TH.Syntax           (qLocation)
 import Network.Wai (Middleware)
@@ -58,6 +61,10 @@ makeFoundation appSettings = do
     pool <- flip runLoggingT logFunc $ createMySQLPool
         (myConnInfo $ appDatabaseConf appSettings)
         (myPoolSize $ appDatabaseConf appSettings)
+
+    pool <- flip runLoggingT logFunc $ createPostgresqlPool
+        (pgConnStr $ appDatabaseConf appSettings)
+        (pgPoolSize $ appDatabaseConf appSettings)
 
     runLoggingT (runSqlPool (runMigration migrateAll) pool) logFunc
 
