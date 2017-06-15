@@ -21,4 +21,4 @@ before_install:
 
 
 script:
-  script: cd $LIB_DIR && stack --no-terminal --install-ghc test --only-dependencies
+  - cd $LIB_DIR && stack --no-terminal --install-ghc test --only-dependencies
