@@ -5,7 +5,6 @@
 module Handler.ApiDataTypes where
 
 import           Data.Aeson.Types as AT
-import           Import
 
 -- | Type declaration
 
