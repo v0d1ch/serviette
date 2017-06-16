@@ -4,10 +4,10 @@
 -- next version will implement database query result in the json format
 -- as well as errors in the json structure if any
 
-module Serviette (SqlQuery, SqlResultQuery, rawSqlStr) where
+module Data.Serviette (SqlQuery, SqlResultQuery, rawSqlStr) where
 
-import           ApiDataTypes
-import           Data.Text    hiding (concat, map)
+import           Data.ApiDataTypes
+import           Data.Text         hiding (concat, map)
 
 
 -- | Various Getters

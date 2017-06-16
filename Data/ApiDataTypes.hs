@@ -3,7 +3,7 @@
 {-# LANGUAGE RecordWildCards   #-}
 
 -- | This provides types that represent sql query structure
-module ApiDataTypes where
+module Data.ApiDataTypes where
 
 import           Control.Applicative
 import           Control.Monad
