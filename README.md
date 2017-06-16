@@ -19,3 +19,9 @@
       ]
 }
 ````
+
+If `format` is set to 1 you will get raw sql string back, something like this:
+`````
+
+`````
+

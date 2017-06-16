@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Serviette where
+module Serviette (SqlQuery, SqlResultQuery, rawSqlStr) where
 
 import           ApiDataTypes
 import           Data.Text    hiding (concat, map)
@@ -49,7 +49,11 @@ formatWhereConditionStr :: WhereCondition -> Text
 formatWhereConditionStr j = Prelude.foldl append " " (" where " : [ (extractTableName $ whereTableName j), "." , (extractColumnName $ whereField j) , " " ,(extractOperator $ whereOperator j) , " " , (pack $ formatFieldValue $ whereFieldValue j)])
 
 
-rawSqlStr :: SqlResultQuery -> Text
-rawSqlStr sql = Prelude.foldl append "" [(extractAction $ getAction sql) ,(extractTableName $ getSelectTable sql) , joins , whereConditions ]
+formatToSqlResultQueryType sql = SqlResultQuery (getActionArg sql) (getSelectTableArg sql) (getJoinTableArg sql) (getWhereConditionArg sql)
+
+rawSqlStr :: SqlQuery -> Text
+rawSqlStr s =
+  Prelude.foldl append "" [(extractAction $ getAction sql) ,(extractTableName $ getSelectTable sql) , joins , whereConditions ]
   where joins = Prelude.foldl append "" $ fmap formatJoinStr $ getJoins sql
         whereConditions = Prelude.foldl append "" $ fmap formatWhereConditionStr $ getWhereCondition sql
+        sql = formatToSqlResultQueryType s
