@@ -1,6 +1,6 @@
 name:                serviette
 version:             0.1.0.0
--- synopsis:
+synopsis:            JSON to Sql raw string or db result in json format
 -- description:
 homepage:            https://github.com/v0d1ch/serviette#readme
 license:             BSD3
