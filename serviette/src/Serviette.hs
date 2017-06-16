@@ -9,7 +9,7 @@ import           Data.Text    hiding (concat, map)
 -- | Various Getters
 
 extractAction :: Action -> Text
-extractAction (Action t) = t ++ " "
+extractAction (Action t) = append t  " "
 
 extractTableName :: TableName -> Text
 extractTableName (TableName t) = t
@@ -36,12 +36,7 @@ getFormatArg :: SqlQuery -> Int
 getFormatArg q =  getFormat $ Format $ format q
 
 formatJoinStr :: JoinTable -> Text
-formatJoinStr j = " join "
-  ++ (extractTableName $ tablename j) ++ " on "
-  ++ (extractColumnName $ field j) ++ " "
-  ++ (extractOperator $ operator j) ++ " "
-  ++ (extractTableName $ withTable j) ++ "."
-  ++ (extractColumnName $ withField j) ++ " "
+formatJoinStr j = Prelude.foldl append "" (" join " : [(extractTableName $ tablename j) , " on " , (extractColumnName $ field j) , " " ,(extractOperator $ operator j) , " " , (extractTableName $ withTable j)  , "." , (extractColumnName $ withField j), " " ])
 
 formatFieldValue :: FieldValue -> String
 formatFieldValue a =
@@ -51,15 +46,10 @@ formatFieldValue a =
     DateField x -> show x
 
 formatWhereConditionStr :: WhereCondition -> Text
-formatWhereConditionStr j = " where "
-  ++ (extractTableName $ whereTableName j) ++ "."
-  ++ (extractColumnName $ whereField j) ++ " "
-  ++ (extractOperator $ whereOperator j) ++ " "
-  ++ (pack $ formatFieldValue $ whereFieldValue j)
+formatWhereConditionStr j = Prelude.foldl append " " (" where " : [ (extractTableName $ whereTableName j), "." , (extractColumnName $ whereField j) , " " ,(extractOperator $ whereOperator j) , " " , (pack $ formatFieldValue $ whereFieldValue j)])
 
 
 rawSqlStr :: SqlResultQuery -> Text
-rawSqlStr sql = (extractAction $ getAction sql)
-  ++  (extractTableName $ getSelectTable sql)
-  ++  (concat . map formatJoinStr $ getJoins sql )
-  ++  (concat . map formatWhereConditionStr $ getWhereCondition sql)
+rawSqlStr sql = Prelude.foldl append "" [(extractAction $ getAction sql) ,(extractTableName $ getSelectTable sql) , joins , whereConditions ]
+  where joins = Prelude.foldl append "" $ fmap formatJoinStr $ getJoins sql
+        whereConditions = Prelude.foldl append "" $ fmap formatWhereConditionStr $ getWhereCondition sql
