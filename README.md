@@ -7,7 +7,7 @@
 ### Expected JSON format
 ````
 {
-	"format":1,
+    "format":1,
     "action":"SELECT",
     "selectName": "users",
     "joinTables":[
