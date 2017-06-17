@@ -1,0 +1,2 @@
+module Test.ServietteTest where
+--  "{\"format\":1, \"action\":\"DELETE\", \"selectName\": \"users\",\"joinTables\":[{\"tablename\":\"addresses\",\"field\":\"userid\",\"operator\":\"=\",\"withTable\":\"users\", \"withField\":\"id\"}, {\"tablename\":\"posts\",\"field\":\"userid\",\"operator\":\"=\",\"withTable\":\"users\", \"withField\":\"id\"}],    \"whereCondition\":[ {\"whereTableName\":\"users\",\"whereField\":\"id\", \"whereOperator\":\">\", \"whereFieldValue\": 1}]}"

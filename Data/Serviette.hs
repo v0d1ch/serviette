@@ -8,13 +8,24 @@ module Data.Serviette (SqlQuery, SqlResultQuery, rawSqlStr) where
 
 import           Data.ApiDataTypes
 import           Data.Text         hiding (concat, foldl, map)
+import           Data.Aeson
+
 
 
 -- | Various Getters
 
 -- | Extracts the action and appends space
 extractAction :: Action -> Text
-extractAction (Action t) = append t  " "
+extractAction (Action t) =
+  if t == "SELECT"
+    then  append t  " "
+  else if t == "DELETE"
+    then  append t  " FROM "
+  else if t == "INSERT"
+    then  append t  " INTO "
+  else error "Action parameter id wrong"
+
+
 
 -- | Extracts table name to Text
 extractTableName :: TableName -> Text
@@ -75,3 +86,6 @@ rawSqlStr s =
   where joins = foldl append "" $ fmap formatJoinStr $ getJoins sql
         whereConditions = foldl append "" $ fmap formatWhereConditionStr $ getWhereCondition sql
         sql = formatToSqlResultQueryType s
+
+
+

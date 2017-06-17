@@ -29,6 +29,7 @@ data Operator = Operator Text
 -- | Represents the main action for the sql query (SELECT,INSERT, UPDATE, DELETE)
 data Action = Action Text
   deriving (Show, Generic)
+
 -- | Represents return format (for now this is only raw sql string)
 data Format = Format
   { getFormat :: Int
