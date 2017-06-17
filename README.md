@@ -5,7 +5,7 @@
 - Why not ?
 
 ### Expected JSON format
-````
+```
 {
 	"format":1,
     "action":"SELECT",
@@ -20,8 +20,9 @@
 }
 ````
 
-If `format` is set to 1 you will get raw sql string back, something like this:
-`````
+If `format` is set to 1 you will get raw sql string back:
 
-`````
+````
+"SELECT users join addresses on userid = users.id join posts on userid = users.id where users.id > 1"
+```
 
