@@ -29,4 +29,5 @@ SELECT users join addresses on userid = users.id join posts on userid = users.id
 ### Work in progress
 This works for `SELECT` statements, others need to be implemented as well as error and warning messages if the json does not contain what it should. 
 You can find this lib on [hackage](https://hackage.haskell.org/package/serviette)
+Example usage with Yesod is [here](https://github.com/v0d1ch/serviette-yesod-example)
 
