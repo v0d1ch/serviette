@@ -1,4 +1,4 @@
-# SERVIETTE - SQL JSON API 
+# SERVIETTE - JSON to SQL 
   Library for generating SQL queries from JSON. 
   Send the json in the expected format and receive raw sql string.
 ### Why ?
