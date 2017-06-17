@@ -10,8 +10,6 @@ addons:
   apt:
     packages:
       - libgmp-dev
-env:
-  LIB_DIR=serviette
 
 before_install:
   # Download and unpack the stack executable
@@ -21,4 +19,4 @@ before_install:
 
 
 script:
-  - cd $LIB_DIR && stack --no-terminal --install-ghc test --only-dependencies
+  - stack --no-terminal --install-ghc test --only-dependencies
