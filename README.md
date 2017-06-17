@@ -26,5 +26,6 @@ If `format` is set to 1 you will get raw sql string back:
 "SELECT users join addresses on userid = users.id join posts on userid = users.id where users.id > 1"
 ```
 ### Work in progress
-This works for SELECT statements, others need to be implemented as well as error and warning messages if the json does not contain what it should
+This works for SELECT statements, others need to be implemented as well as error and warning messages if the json does not contain what it should. 
+You can find this lib on [hackage](https://hackage.haskell.org/package/serviette)
 
