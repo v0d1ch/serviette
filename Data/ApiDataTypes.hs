@@ -47,7 +47,6 @@ data JoinTable = JoinTable
   , operator           :: Operator
   , withTable          :: TableName
   , withField          :: ColumnName
-  , whereConditionJoin :: Text
   } deriving (Show, Generic)
 
 -- | Represents main where condition
