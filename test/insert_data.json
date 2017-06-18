@@ -1,0 +1,16 @@
+{
+	"format":1,
+    "action":"INSERT",
+    "selectName": "users",
+    "set":[
+    	{"columnName":"name", "fieldValue":"sasa"},
+    	{"columnName":"lastname","fieldValue":"bogicevic"}
+    ],
+    "joinTables":[
+    	  {"tablename":"addresses","field":"userid","operator":"=","withTable":"users", "withField":"id"},
+          {"tablename":"posts","field":"userid","operator":"=","withTable":"users", "withField":"id"}
+    	],
+    "whereCondition":[
+          {"whereTableName":"users","whereField":"id", "whereOperator":">", "whereFieldValue": 1}
+      ]
+}
