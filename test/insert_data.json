@@ -1,0 +1,9 @@
+{
+	"format":1,
+    "action":"INSERT",
+    "selectName": "users",
+    "set":[
+    	{"columnName":"name", "setFieldValue":"sasa"},
+    	{"columnName":"lastname","setFieldValue":"bogicevic"}
+    ]
+}
