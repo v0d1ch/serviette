@@ -3,8 +3,8 @@
     "action":"INSERT",
     "selectName": "users",
     "set":[
-    	{"columnName":"name", "fieldValue":"sasa"},
-    	{"columnName":"lastname","fieldValue":"bogicevic"}
+    	{"columnName":"name", "setFieldValue":"sasa"},
+    	{"columnName":"lastname","setFieldValue":"bogicevic"}
     ],
     "joinTables":[
     	  {"tablename":"addresses","field":"userid","operator":"=","withTable":"users", "withField":"id"},

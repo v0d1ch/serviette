@@ -38,13 +38,13 @@ data Format = Format
 -- | Represents Date field value
 type DateVal = Text
 
--- | Represents field value which can be integer, string or date
+-- | Represents field value which can be integer, text or date
 data FieldValue = IntField Int | TextField Text | DateField DateVal deriving (Show, Generic)
 
 -- | Represents set fields for the sql insert query
-data SetFields  = SetFields
-  { columnName           :: ColumnName
-  , fieldValue           :: FieldValue 
+data SetField = SetField
+  { columnName    :: ColumnName
+  , setFieldValue :: FieldValue
   } deriving (Show, Generic)
 
 
@@ -70,16 +70,16 @@ data SqlQuery = SqlQuery
   { format         :: Int
   , action         :: Action
   , selectName     :: TableName
+  , set            :: [SetField]
   , joinTables     :: [JoinTable]
   , whereCondition :: [WhereCondition]
-  , set :: [SetFields]
-
   } deriving (Show, Generic)
 
 -- | Represents type that is the result of the json "computation"
 data SqlResultQuery = SqlResultQuery
   { getAction         :: Action
   , getSelectTable    :: TableName
+  , getSetFields      :: [SetField]
   , getJoins          :: [JoinTable]
   , getWhereCondition :: [WhereCondition]
   } deriving (Show, Generic)
@@ -96,8 +96,17 @@ instance ToJSON Action
 instance FromJSON Operator
 instance ToJSON Operator
 
-instance FromJSON SetFields 
-instance ToJSON  SetFields 
+instance ToJSON SetField
+instance FromJSON SetField where
+  parseJSON (Object v)
+      = SetField
+      <$> v .: "columnName"
+      <*> (   IntField  <$> (v .: "setFieldValue")
+          <|> TextField <$> (v .: "setFieldValue")
+          <|> DateField <$> (v .: "setFieldValue")
+          )
+  parseJSON _  = mzero
+
 
 instance FromJSON  JoinTable
 instance ToJSON  JoinTable
