@@ -71,7 +71,7 @@ data SqlQuery = SqlQuery
   , action         :: Action
   , selectName     :: TableName
   , set            :: [SetField]
-  , joinTables     :: [JoinTable]
+  , joinTables     :: Maybe [JoinTable]
   , whereCondition :: [WhereCondition]
   } deriving (Show, Generic)
 
@@ -80,7 +80,7 @@ data SqlResultQuery = SqlResultQuery
   { getAction         :: Action
   , getSelectTable    :: TableName
   , getSetFields      :: [SetField]
-  , getJoins          :: [JoinTable]
+  , getJoins          :: Maybe [JoinTable]
   , getWhereCondition :: [WhereCondition]
   } deriving (Show, Generic)
 

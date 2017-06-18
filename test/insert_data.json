@@ -5,12 +5,5 @@
     "set":[
     	{"columnName":"name", "setFieldValue":"sasa"},
     	{"columnName":"lastname","setFieldValue":"bogicevic"}
-    ],
-    "joinTables":[
-    	  {"tablename":"addresses","field":"userid","operator":"=","withTable":"users", "withField":"id"},
-          {"tablename":"posts","field":"userid","operator":"=","withTable":"users", "withField":"id"}
-    	],
-    "whereCondition":[
-          {"whereTableName":"users","whereField":"id", "whereOperator":">", "whereFieldValue": 1}
-      ]
+    ]
 }

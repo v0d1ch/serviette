@@ -48,7 +48,7 @@ getSetFieldsArg :: SqlQuery -> [SetField]
 getSetFieldsArg q =  set q
 
 -- | Retrieves the join list from the SqlQuery
-getJoinTableArg :: SqlQuery -> [JoinTable]
+getJoinTableArg :: SqlQuery -> Maybe [JoinTable]
 getJoinTableArg q =  joinTables q
 
 -- | Gets the where condition list
@@ -89,6 +89,8 @@ rawSqlStr :: SqlQuery -> Text
 rawSqlStr s =
   foldl append "" [(extractAction $ getAction sql) ,(extractTableName $ getSelectTable sql) , setFields , joins , whereConditions ]
   where setFields = foldl append "" $ fmap formatSetStr $ getSetFields sql
-        joins = foldl append "" $ fmap formatJoinStr $ getJoins sql
+        joins = case getJoins sql of
+                     Just x -> foldl append "" $ fmap formatJoinStr x
+                     Nothing -> ""
         whereConditions = foldl append "" $ fmap formatWhereConditionStr $ getWhereCondition sql
         sql = formatToSqlResultQueryType s
