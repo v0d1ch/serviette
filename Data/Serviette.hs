@@ -52,7 +52,7 @@ getJoinTableArg :: SqlQuery -> Maybe [JoinTable]
 getJoinTableArg q =  joinTables q
 
 -- | Gets the where condition list
-getWhereConditionArg :: SqlQuery -> [WhereCondition]
+getWhereConditionArg :: SqlQuery -> Maybe [WhereCondition]
 getWhereConditionArg q =  whereCondition q
 
 -- | Retrieves the result Format
@@ -92,5 +92,7 @@ rawSqlStr s =
         joins = case getJoins sql of
                      Just x -> foldl append "" $ fmap formatJoinStr x
                      Nothing -> ""
-        whereConditions = foldl append "" $ fmap formatWhereConditionStr $ getWhereCondition sql
+        whereConditions = case getWhereCondition sql of
+                            Just x -> foldl append "" $ fmap formatWhereConditionStr x
+                            Nothing -> ""
         sql = formatToSqlResultQueryType s

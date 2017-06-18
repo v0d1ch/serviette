@@ -72,7 +72,7 @@ data SqlQuery = SqlQuery
   , selectName     :: TableName
   , set            :: [SetField]
   , joinTables     :: Maybe [JoinTable]
-  , whereCondition :: [WhereCondition]
+  , whereCondition :: Maybe [WhereCondition]
   } deriving (Show, Generic)
 
 -- | Represents type that is the result of the json "computation"
@@ -81,7 +81,7 @@ data SqlResultQuery = SqlResultQuery
   , getSelectTable    :: TableName
   , getSetFields      :: [SetField]
   , getJoins          :: Maybe [JoinTable]
-  , getWhereCondition :: [WhereCondition]
+  , getWhereCondition :: Maybe [WhereCondition]
   } deriving (Show, Generic)
 
 
