@@ -41,6 +41,13 @@ type DateVal = Text
 -- | Represents field value which can be integer, string or date
 data FieldValue = IntField Int | TextField Text | DateField DateVal deriving (Show, Generic)
 
+-- | Represents set fields for the sql insert query
+data SetFields  = SetFields
+  { columnName           :: ColumnName
+  , fieldValue           :: FieldValue 
+  } deriving (Show, Generic)
+
+
 -- | Represents join table for the sql query
 data JoinTable = JoinTable
   { tablename          :: TableName
@@ -65,6 +72,8 @@ data SqlQuery = SqlQuery
   , selectName     :: TableName
   , joinTables     :: [JoinTable]
   , whereCondition :: [WhereCondition]
+  , set :: [SetFields]
+
   } deriving (Show, Generic)
 
 -- | Represents type that is the result of the json "computation"
@@ -76,60 +85,36 @@ data SqlResultQuery = SqlResultQuery
   } deriving (Show, Generic)
 
 
--- | Instances
+-- | Aeson Instances
 
--- | Json instance for TableName
 instance FromJSON TableName
-
--- | Json instance for TableName
 instance ToJSON TableName
 
--- | aeson instance for Action
 instance FromJSON Action
-
--- | aeson instance for Action
 instance ToJSON Action
 
--- | aeson instance for Operator
 instance FromJSON Operator
-
--- | aeson instance for Operator
 instance ToJSON Operator
 
--- | aeson instance for JoinTable
-instance FromJSON  JoinTable
+instance FromJSON SetFields 
+instance ToJSON  SetFields 
 
--- | aeson instance for JoinTable
+instance FromJSON  JoinTable
 instance ToJSON  JoinTable
 
--- | aeson instance for ColumnName
 instance FromJSON  ColumnName
-
--- | aeson instance for ColumnName
 instance ToJSON ColumnName
 
--- | aeson instance for SqlQuery
 instance FromJSON SqlQuery
-
--- | aeson instance for SqlQuery
 instance ToJSON SqlQuery
 
--- | aeson instance for SqlResultQuery
 instance FromJSON SqlResultQuery
-
--- | aeson instance for SqlResultQuery
 instance ToJSON SqlResultQuery
 
--- | aeson instance for FieldValue
 instance FromJSON FieldValue
-
--- | aeson instance for FieldValue
 instance ToJSON FieldValue
 
--- | aeson instance for WhereCondition
 instance ToJSON   WhereCondition
-
--- | aeson instance for WhereCondition
 instance FromJSON WhereCondition where
     parseJSON (Object v)
         =  WhereCondition
