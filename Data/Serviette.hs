@@ -61,7 +61,7 @@ getFormatArg q =  getFormat $ Format $ format q
 
 -- | Formats the join table list
 formatSetStr :: SetField -> Text
-formatSetStr j = foldl append "" (" set " : [(extractColumnName $ columnName j) , " = " , (formatFieldValue $ setFieldValue j) , " , " ])
+formatSetStr j = (foldl append "" (" set " : [(extractColumnName $ columnName j) , " = " , (formatFieldValue $ setFieldValue j) , " ," ]))
 
 
 -- | Formats the join table list
@@ -89,7 +89,7 @@ rawSqlStr :: SqlQuery -> Text
 rawSqlStr s =
   foldl append "" [(extractAction $ getAction sql) ,(extractTableName $ getSelectTable sql) , setFields , joins , whereConditions ]
   where setFields = case  getSetFields sql of
-                      Just x -> foldl append "" $ fmap formatSetStr x
+                      Just x -> Data.Text.init $  foldl append "" $ fmap formatSetStr x
                       Nothing -> ""
         joins = case getJoins sql of
                      Just x -> foldl append "" $ fmap formatJoinStr x
