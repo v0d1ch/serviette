@@ -44,7 +44,7 @@ getSelectTableArg :: SqlQuery -> TableName
 getSelectTableArg q = selectName q
 
 -- | Retrieves the set list from the SqlQuery
-getSetFieldsArg :: SqlQuery -> [SetField]
+getSetFieldsArg :: SqlQuery -> Maybe [SetField]
 getSetFieldsArg q =  set q
 
 -- | Retrieves the join list from the SqlQuery
@@ -88,7 +88,9 @@ formatToSqlResultQueryType sql = SqlResultQuery (getActionArg sql) (getSelectTab
 rawSqlStr :: SqlQuery -> Text
 rawSqlStr s =
   foldl append "" [(extractAction $ getAction sql) ,(extractTableName $ getSelectTable sql) , setFields , joins , whereConditions ]
-  where setFields = foldl append "" $ fmap formatSetStr $ getSetFields sql
+  where setFields = case  getSetFields sql of
+                      Just x -> foldl append "" $ fmap formatSetStr x
+                      Nothing -> ""
         joins = case getJoins sql of
                      Just x -> foldl append "" $ fmap formatJoinStr x
                      Nothing -> ""

@@ -70,7 +70,7 @@ data SqlQuery = SqlQuery
   { format         :: Int
   , action         :: Action
   , selectName     :: TableName
-  , set            :: [SetField]
+  , set            :: Maybe [SetField]
   , joinTables     :: Maybe [JoinTable]
   , whereCondition :: Maybe [WhereCondition]
   } deriving (Show, Generic)
@@ -79,7 +79,7 @@ data SqlQuery = SqlQuery
 data SqlResultQuery = SqlResultQuery
   { getAction         :: Action
   , getSelectTable    :: TableName
-  , getSetFields      :: [SetField]
+  , getSetFields      :: Maybe [SetField]
   , getJoins          :: Maybe [JoinTable]
   , getWhereCondition :: Maybe [WhereCondition]
   } deriving (Show, Generic)
