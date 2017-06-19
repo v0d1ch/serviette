@@ -9,7 +9,7 @@ import Control.Monad
 import qualified Data.ByteString.Lazy as B
 
 jsonFile :: FilePath
-jsonFile = "test/insert_data.json"
+jsonFile = "test/delete_data.json"
 
 getJSON :: IO B.ByteString
 getJSON = B.readFile jsonFile
