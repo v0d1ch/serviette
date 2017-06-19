@@ -4,7 +4,8 @@
 -- next version will implement database query result in the json format
 -- as well as errors in the json structure if any
 
-module Data.Serviette (SqlQuery, SqlResultQuery, rawSqlStr) where
+
+module Data.Serviette (rawSqlStr) where
 
 import           Data.ApiDataTypes
 import           Data.Text         hiding (concat, foldl, map)
