@@ -84,6 +84,11 @@ data SqlResultQuery = SqlResultQuery
   , getWhereCondition :: Maybe [WhereCondition]
   } deriving (Show, Generic)
 
+data SqlResponse = SqlResponse
+  { response :: Text
+  , errors   :: Text
+  , warnings :: Text
+  } deriving (Show, Generic)
 
 -- | Aeson Instances
 
@@ -119,6 +124,9 @@ instance ToJSON SqlQuery
 
 instance FromJSON SqlResultQuery
 instance ToJSON SqlResultQuery
+
+instance FromJSON SqlResponse
+instance ToJSON SqlResponse
 
 instance FromJSON FieldValue
 instance ToJSON FieldValue
