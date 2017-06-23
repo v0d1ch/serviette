@@ -104,16 +104,16 @@ getErrors :: SqlQuery -> Text
 getErrors s =
       case action s of
         Action "DELETE" ->
-          if isJust $ joinTables s then " Do not use joins in DELETE query " else ""
+          if isNothing (joinTables s) then "" else " Do not use joins in DELETE query " 
         Action "UPDATE" ->
-          if isJust $ joinTables s then " Do not use joins in UPDATE query " else ""
+          if isJust (joinTables s) then " Do not use joins in UPDATE query " else ""
 
 
 getWarnings :: SqlQuery -> Text
 getWarnings s =
       case action s of
-        Action "DELETE" -> "Do not use joins in DELETE query |"
-        Action "UPDATE" -> "Do not use joins in UPDATE query |"
+        Action "DELETE" -> ""
+        Action "UPDATE" -> ""
 
 
 -- | Returns raw sql ByteString

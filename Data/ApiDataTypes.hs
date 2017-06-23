@@ -119,7 +119,18 @@ instance ToJSON  JoinTable
 instance FromJSON  ColumnName
 instance ToJSON ColumnName
 
-instance FromJSON SqlQuery
+-- instance FromJSON SqlQuery
+instance FromJSON SqlQuery where
+    parseJSON (Object v)
+        = SqlQuery
+        <$> v .: "format"
+        <*> v .: "action"
+        <*> v .: "selectName"
+        <*> v .:? "set"
+        <*> v .:? "joinTables"
+        <*> v .:? "whereCondition"
+    parseJSON _  = mzero
+
 instance ToJSON SqlQuery
 
 instance FromJSON SqlResultQuery
