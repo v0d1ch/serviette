@@ -101,19 +101,32 @@ formatWhereConditionStr j = foldl append " " (" where " : [ (extractTableName $ 
 formatToSqlResultQueryType sql = SqlResultQuery (getActionArg sql) (getSelectTableArg sql) (getSetFieldsArg sql) (getJoinTableArg sql) (getWhereConditionArg sql)
 
 getErrors :: SqlQuery -> Text
-getErrors s =
-      case action s of
-        Action "DELETE" ->
-          if isNothing (joinTables s) then "" else " Do not use joins in DELETE query " 
-        Action "UPDATE" ->
-          if isJust (joinTables s) then " Do not use joins in UPDATE query " else ""
+getErrors s = t
+  where t = case action s of
+                Action "SELECT" ->
+                    if isJust (set s) then " Do not use SET in SELECT query " else ""
+                    -- if  selectName s == "" then " You are missing the FROM table name in SELECT statement " else  ""
+                Action "DELETE" ->
+                  if isNothing (joinTables s) then "" else " Do not use joins in DELETE query "
+                Action "UPDATE" ->
+                  if isJust (joinTables s) then " Do not use joins in UPDATE query " else ""
+                Action "INSERT" ->
+                  if isJust (joinTables s) then " Do not use joins in UPDATE query " else ""
 
 
 getWarnings :: SqlQuery -> Text
 getWarnings s =
       case action s of
-        Action "DELETE" -> ""
-        Action "UPDATE" -> ""
+        Action "SELECT" ->
+          if isNothing (whereCondition s) then " You are probably missing WHERE statement " else ""
+        Action "DELETE" ->
+          if isNothing (whereCondition s) then " You are probably missing WHERE statement " else ""
+        Action "UPDATE" ->
+          if isNothing (whereCondition s) then " You are missing WHERE statement " else ""
+        Action "INSERT" ->
+          if isNothing (set s) then " You are missing the SET statement " else ""
+
+
 
 
 -- | Returns raw sql ByteString

@@ -16,7 +16,7 @@ import           Generics.Deriving
 
 -- | Represents db table name
 data TableName = TableName Text
-  deriving (Show, Generic)
+  deriving (Show, Generic, Eq)
 
 -- | Represents db table column name
 data ColumnName = ColumnName Text
