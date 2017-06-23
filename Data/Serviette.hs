@@ -11,6 +11,7 @@ import           Data.ApiDataTypes
 import           Data.Text         hiding (concat, foldl, map)
 import           Data.Aeson
 import           TextShow
+import           Data.Maybe
 import           Data.ByteString.Lazy hiding (append, foldl)
 
 
@@ -99,11 +100,25 @@ formatWhereConditionStr j = foldl append " " (" where " : [ (extractTableName $ 
 -- | Creates final SqlResultQuery type
 formatToSqlResultQueryType sql = SqlResultQuery (getActionArg sql) (getSelectTableArg sql) (getSetFieldsArg sql) (getJoinTableArg sql) (getWhereConditionArg sql)
 
+getErrors :: SqlQuery -> Text
+getErrors s =
+      case action s of
+        Action "DELETE" ->
+          if isJust $ joinTables s then " Do not use joins in DELETE query " else ""
+        Action "UPDATE" ->
+          if isJust $ joinTables s then " Do not use joins in UPDATE query " else ""
+
+
+getWarnings :: SqlQuery -> Text
+getWarnings s =
+      case action s of
+        Action "DELETE" -> "Do not use joins in DELETE query |"
+        Action "UPDATE" -> "Do not use joins in UPDATE query |"
 
 
 -- | Returns raw sql ByteString
 rawSqlStr :: SqlQuery -> ByteString
-rawSqlStr s = encode $ SqlResponse {response = alltext, errors = "", warnings = ""}
+rawSqlStr s = encode $ SqlResponse {response = alltext, errors = getErrors s , warnings = getWarnings s}
   where
         alltext = foldl append "" [(extractAction $ getAction sql) ,(extractTableName $ getSelectTable sql) , setFields , joins , whereConditions ]
         setFields = case  getSetFields sql of
