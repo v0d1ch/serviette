@@ -26,9 +26,7 @@ If `format` is set to 1 you will get json response:
 ````
 {"response":"SELECT users join addresses on userid = users.id  join posts on userid = users.id   where users.id > 1","warnings":"","errors":""}
 ````
-
-### Work in progress
-Error and warning messages need to be implemented as well as more complex queries. 
+ 
 You can find this lib on [hackage](https://hackage.haskell.org/package/serviette)
 Serviette backend is [here](https://github.com/v0d1ch/serviette-yesod-example)
 
