@@ -11,6 +11,7 @@ import           Data.ApiDataTypes
 import           Data.Text         hiding (concat, foldl, map)
 import           Data.Aeson
 import           TextShow
+import           Data.Maybe
 import           Data.ByteString.Lazy hiding (append, foldl)
 
 
@@ -99,11 +100,53 @@ formatWhereConditionStr j = foldl append " " (" where " : [ (extractTableName $ 
 -- | Creates final SqlResultQuery type
 formatToSqlResultQueryType sql = SqlResultQuery (getActionArg sql) (getSelectTableArg sql) (getSetFieldsArg sql) (getJoinTableArg sql) (getWhereConditionArg sql)
 
+getErrors :: SqlQuery -> Text
+getErrors s = t
+  where
+    t =
+      case action s of
+        Action "SELECT"
+          | isJust (set s) -> " Do not use SET in SELECT query "
+          | Data.Text.null (extractTableName $ selectName s)  -> " You are missing the FROM table name in SELECT statement "
+          | otherwise -> ""
+        Action "DELETE"
+          | isJust (joinTables s) -> " Do not use joins in DELETE query "
+          | otherwise -> ""
+        Action "UPDATE"
+          | isJust (joinTables s) -> " Do not use joins in UPDATE query "
+          | otherwise -> ""
+        Action "INSERT"
+          | isJust (joinTables s) -> " Do not use joins in UPDATE query "
+          | otherwise -> ""
+
+
+
+getWarnings :: SqlQuery -> Text
+getWarnings s = t
+  where
+    t =
+      case action s of
+        Action "SELECT"
+          | isNothing (whereCondition s) ->
+            " You are probably missing WHERE statement "
+          | otherwise -> ""
+        Action "DELETE"
+          | isNothing (whereCondition s) ->
+            " You are probably missing WHERE statement "
+          | otherwise -> ""
+        Action "UPDATE"
+          | isNothing (whereCondition s) -> " You are missing WHERE statement "
+          | otherwise -> ""
+        Action "INSERT"
+          | isNothing (set s) -> " You are missing the SET statement "
+          | otherwise -> ""
+
+
 
 
 -- | Returns raw sql ByteString
 rawSqlStr :: SqlQuery -> ByteString
-rawSqlStr s = encode $ SqlResponse {response = alltext, errors = "", warnings = ""}
+rawSqlStr s = encode $ SqlResponse {response = alltext, errors = getErrors s , warnings = getWarnings s}
   where
         alltext = foldl append "" [(extractAction $ getAction sql) ,(extractTableName $ getSelectTable sql) , setFields , joins , whereConditions ]
         setFields = case  getSetFields sql of

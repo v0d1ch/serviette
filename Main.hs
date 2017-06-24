@@ -8,8 +8,10 @@ import Control.Applicative
 import Control.Monad
 import qualified Data.ByteString.Lazy as B
 
+-- | THIS FILE IS HERE JUST FOR TESTING PURPOSES !!!
+
 jsonFile :: FilePath
-jsonFile = "test/delete_data.json"
+jsonFile = "test/select_data.json"
 
 getJSON :: IO B.ByteString
 getJSON = B.readFile jsonFile
