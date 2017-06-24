@@ -1,4 +1,5 @@
-# SERVIETTE - JSON to SQL 
+# SERVIETTE - JSON to SQL [![Build Status](https://travis-ci.org/v0d1ch/serviette.svg?branch=master)](https://travis-ci.org/v0d1ch/serviette)
+
   Library for generating SQL queries from JSON. 
   Send the json in the expected format and receive raw sql string.
 ### Why ?
@@ -20,14 +21,12 @@
 }
 ````
 
-If `format` is set to 1 you will get raw sql string back:
+If `format` is set to 1 you will get json response:
 
 ````
-SELECT users join addresses on userid = users.id join posts on userid = users.id where users.id > 1
+{"response":"SELECT users join addresses on userid = users.id  join posts on userid = users.id   where users.id > 1","warnings":"","errors":""}
 ````
-
-### Work in progress
-This works for `SELECT` statements, others need to be implemented as well as error and warning messages if the json does not contain what it should. 
+ 
 You can find this lib on [hackage](https://hackage.haskell.org/package/serviette)
-Example usage with Yesod is [here](https://github.com/v0d1ch/serviette-yesod-example)
+Serviette backend is [here](https://github.com/v0d1ch/serviette-yesod-example)
 
