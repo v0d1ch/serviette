@@ -90,7 +90,6 @@ data SqlResponse = SqlResponse
   , warnings :: Text
   } deriving (Show, Generic)
 
--- | Aeson Instances
 
 instance FromJSON TableName
 instance ToJSON TableName
