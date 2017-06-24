@@ -1,8 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
--- | Define functions needed for Json to Text manipulation
--- current version supports only raw sql string result
--- next version will implement database query result in the json format
--- as well as errors in the json structure if any
+-- | Generate sql queries from JSON. You could use this to query database directly from frontend. Basic sql queries are supported and the resulting sql query is returned in json format. 
 
 
 module Data.Serviette
