@@ -5,7 +5,12 @@
 -- as well as errors in the json structure if any
 
 
-module Data.Serviette (rawSqlStr) where
+module Data.Serviette
+  ( rawSqlStr
+  , SqlQuery(..)
+  , SqlResponse(..)
+  , SqlResultQuery(..)
+  ) where
 
 import           Data.ApiDataTypes
 import           Data.Text         hiding (concat, foldl, map)
@@ -100,6 +105,9 @@ formatWhereConditionStr j = foldl append " " (" where " : [ (extractTableName $ 
 -- | Creates final SqlResultQuery type
 formatToSqlResultQueryType sql = SqlResultQuery (getActionArg sql) (getSelectTableArg sql) (getSetFieldsArg sql) (getJoinTableArg sql) (getWhereConditionArg sql)
 
+
+
+-- | Returns errors for current query
 getErrors :: SqlQuery -> Text
 getErrors s = t
   where
@@ -120,7 +128,7 @@ getErrors s = t
           | otherwise -> ""
 
 
-
+-- | Returns possible warnings for current query
 getWarnings :: SqlQuery -> Text
 getWarnings s = t
   where
