@@ -1,11 +1,13 @@
 {-# LANGUAGE OverloadedStrings #-}
--- | Define functions needed for Json to Text manipulation
--- current version supports only raw sql string result
--- next version will implement database query result in the json format
--- as well as errors in the json structure if any
+-- | Generate sql queries from JSON. You could use this to query database directly from frontend. Basic sql queries are supported and the resulting sql query is returned in json format. 
 
 
-module Data.Serviette (rawSqlStr) where
+module Data.Serviette
+  ( rawSqlStr
+  , SqlQuery(..)
+  , SqlResponse(..)
+  , SqlResultQuery(..)
+  ) where
 
 import           Data.ApiDataTypes
 import           Data.Text         hiding (concat, foldl, map)
@@ -100,6 +102,9 @@ formatWhereConditionStr j = foldl append " " (" where " : [ (extractTableName $ 
 -- | Creates final SqlResultQuery type
 formatToSqlResultQueryType sql = SqlResultQuery (getActionArg sql) (getSelectTableArg sql) (getSetFieldsArg sql) (getJoinTableArg sql) (getWhereConditionArg sql)
 
+
+
+-- | Returns errors for current query
 getErrors :: SqlQuery -> Text
 getErrors s = t
   where
@@ -120,7 +125,7 @@ getErrors s = t
           | otherwise -> ""
 
 
-
+-- | Returns possible warnings for current query
 getWarnings :: SqlQuery -> Text
 getWarnings s = t
   where
@@ -144,7 +149,7 @@ getWarnings s = t
 
 
 
--- | Returns raw sql ByteString
+-- | Returns json with sql query and errors and warnings if any 
 rawSqlStr :: SqlQuery -> ByteString
 rawSqlStr s = encode $ SqlResponse {response = alltext, errors = getErrors s , warnings = getWarnings s}
   where
