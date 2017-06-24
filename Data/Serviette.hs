@@ -149,7 +149,7 @@ getWarnings s = t
 
 
 
--- | Returns raw sql ByteString
+-- | Returns json with sql query and errors and warnings if any 
 rawSqlStr :: SqlQuery -> ByteString
 rawSqlStr s = encode $ SqlResponse {response = alltext, errors = getErrors s , warnings = getWarnings s}
   where
