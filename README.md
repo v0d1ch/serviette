@@ -1,5 +1,4 @@
-# SERVIETTE - JSON to SQL [![Build Status](https://travis-ci.org/v0d1ch/serviette.svg?branch=master)](https://travis-ci.org/v0d1ch/serviette)
-[![Hackage](https://img.shields.io/hackage/v/serviette.svg)](https://hackage.haskell.org/package/serviette) 
+# SERVIETTE - JSON to SQL [![Build Status](https://travis-ci.org/v0d1ch/serviette.svg?branch=master)](https://travis-ci.org/v0d1ch/serviette) [![Hackage](https://img.shields.io/hackage/v/serviette.svg)](https://hackage.haskell.org/package/serviette) 
 
   Library for generating SQL queries from JSON. 
   Send the json in the expected format and receive raw sql string.
